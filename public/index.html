@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Matrix Durden</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #050505;
+      color: #e8e8e8;
+      font-family: monospace;
+    }
+
+    main {
+      width: min(720px, 90%);
+    }
+
+    .terminal {
+      border: 1px solid #222;
+      background: #080808;
+      padding: 32px;
+      box-shadow: 0 0 60px rgba(255, 255, 255, 0.03);
+    }
+
+    .prompt {
+      color: #777;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(42px, 9vw, 82px);
+      letter-spacing: -4px;
+      text-transform: uppercase;
+    }
+
+    p {
+      color: #888;
+      line-height: 1.7;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 18px;
+      background: #eee;
+      animation: blink 1s infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="terminal">
+      <div class="prompt">$ whoami</div>
+
+      <h1>MATRIX<br>DURDEN</h1>
+
+      <p>
+        developer / builder / internet citizen
+      </p>
+
+      <p>
+        system online <span class="cursor"></span>
+      </p>
+    </div>
+  </main>
+</body>
+</html>

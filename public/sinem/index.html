@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="tr">
 <head>
@@ -411,7 +410,7 @@
     </section>
 
     <span class="signature">Seninle, her şarkı daha güzel.</span>
-    <audio id="song" preload="metadata" src="i-wanna-be-yours.mp3"></audio>
+    <audio id="song" preload="none"></audio>
   </main>
 
   <script>
@@ -419,7 +418,44 @@
     const song = document.getElementById('song');
     const startButton = document.getElementById('startButton');
     const messages = [...document.querySelectorAll('.message')];
+    const audioParts = [
+      'audio/audio-00.b64',
+      'audio/audio-01.b64',
+      'audio/audio-02a.b64',
+      'audio/audio-02b.b64',
+      'audio/audio-03.b64',
+      'audio/audio-04.b64',
+      'audio/audio-05.b64',
+      'audio/audio-06.b64',
+      'audio/audio-07.b64',
+      'audio/audio-08.b64'
+    ];
     let petalTimer;
+    let audioReady;
+    let audioObjectUrl;
+
+    async function loadSong() {
+      if (!audioReady) {
+        audioReady = Promise.all(
+          audioParts.map(async path => {
+            const response = await fetch(path);
+            if (!response.ok) throw new Error(`Ses dosyası yüklenemedi: ${path}`);
+            return response.text();
+          })
+        ).then(parts => {
+          const base64 = parts.join('');
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i += 1) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          audioObjectUrl = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
+          song.src = audioObjectUrl;
+          return song;
+        });
+      }
+      return audioReady;
+    }
 
     function showMessageAt(time) {
       const active = messages.find(message => time >= Number(message.dataset.from) && time < Number(message.dataset.to));
@@ -440,13 +476,18 @@
     }
 
     async function begin() {
+      const label = startButton.querySelector('.button-label');
       try {
+        label.textContent = 'Şarkı hazırlanıyor';
+        await loadSong();
         await song.play();
+        label.textContent = 'Hikâyemizi başlat';
         page.classList.add('started', 'playing');
         clearInterval(petalTimer);
         petalTimer = setInterval(createPetal, 900);
       } catch (error) {
-        startButton.querySelector('.button-label').textContent = 'Tekrar dokun';
+        audioReady = null;
+        label.textContent = 'Tekrar dokun';
       }
     }
 
@@ -467,6 +508,10 @@
     song.addEventListener('ended', () => {
       page.classList.remove('playing');
       messages.forEach((message, index) => message.classList.toggle('visible', index === messages.length - 1));
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
     });
   </script>
 </body>

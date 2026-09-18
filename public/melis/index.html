@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2a0a12">
+<title>Melis 🤍</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#1c060c; --bg2:#4a0c1f;
+    --wine:#800020; --wine-2:#9e1c3c; --wine-3:#5c0f24;
+    --rose:#f2b8c6; --blush:#e0708c; --cream:#fbe9e4;
+    --muted:rgba(251,233,228,.62);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:radial-gradient(130% 85% at 50% 0%,var(--bg2),var(--bg1) 72%);
+    color:var(--cream);
+    font-family:Quicksand,system-ui,-apple-system,sans-serif;
+    user-select:none;-webkit-user-select:none;
+  }
+
+  /* ---------- floating background hearts ---------- */
+  #bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .fh{position:absolute;bottom:-10vh;animation:rise linear infinite}
+  @keyframes rise{
+    0%{transform:translate(0,0) rotate(0)}
+    50%{transform:translate(18px,-60vh) rotate(12deg)}
+    100%{transform:translate(-12px,-125vh) rotate(-8deg)}
+  }
+
+  /* ---------- screens ---------- */
+  .screen{
+    position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px 16px calc(24px + env(safe-area-inset-bottom));text-align:center;
+    opacity:0;pointer-events:none;transition:opacity 1.1s ease;
+  }
+  .screen.on{opacity:1;pointer-events:auto}
+
+  /* intro */
+  .envelope{
+    width:132px;height:132px;border-radius:50%;border:0;cursor:pointer;
+    background:radial-gradient(circle at 35% 30%,#c4415f,var(--wine) 60%,#4d0013);
+    box-shadow:0 0 0 10px rgba(158,28,60,.18),0 0 70px rgba(158,28,60,.6);
+    font-size:54px;display:grid;place-items:center;
+    animation:beat 1.6s ease-in-out infinite;
+  }
+  @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.08)}30%{transform:scale(.98)}45%{transform:scale(1.05)}}
+  .intro-title{font-family:Caveat,cursive;font-size:44px;font-weight:700;margin-top:34px;color:var(--rose)}
+  .intro-sub{font-size:15px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .hint{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));font-size:13px;color:var(--muted);letter-spacing:.3px}
+
+  /* lyrics */
+  #stage{position:relative;width:100%;max-width:520px;height:60vh}
+  .line{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);padding:0 8px}
+  .line .txt{
+    font-family:Caveat,cursive;font-weight:700;line-height:1.1;
+    font-size:clamp(36px,11vw,56px);
+    filter:drop-shadow(0 0 18px rgba(158,28,60,.7));
+  }
+  .line.soft .txt{font-family:Quicksand,sans-serif;font-weight:400;font-size:20px;color:var(--muted);filter:none}
+  .w{
+    display:inline-block;opacity:0;
+    background:linear-gradient(90deg,var(--cream),var(--rose) 55%,var(--blush));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    transform:translateY(16px) scale(.94);filter:blur(7px);
+    animation:wIn .8s cubic-bezier(.2,.8,.2,1) forwards;
+    animation-delay:calc(var(--i) * 120ms);
+  }
+  .line.soft .w{background:none;color:var(--muted)}
+  @keyframes wIn{to{opacity:1;transform:none;filter:blur(0)}}
+  .line.out{animation:lOut 1s ease forwards}
+  @keyframes lOut{to{opacity:0;transform:translateY(calc(-50% - 46px)) scale(.96);filter:blur(5px)}}
+  .swash{display:block;margin:10px auto 0;width:min(240px,62vw);height:26px;overflow:visible}
+  .swash path{fill:none;stroke:var(--blush);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:300;stroke-dashoffset:300;animation:draw 1.4s .5s ease forwards;opacity:.85}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  /* question */
+  .q-heart{font-size:46px;animation:beat 1.4s ease-in-out infinite}
+  .q-name{font-family:Caveat,cursive;font-size:34px;color:var(--rose);margin-top:18px;opacity:0;animation:fadeUp 1s .3s forwards}
+  .q-text{font-family:Caveat,cursive;font-weight:700;font-size:clamp(46px,14vw,68px);line-height:1.05;margin-top:4px;
+    background:linear-gradient(90deg,var(--cream),var(--rose),var(--blush));-webkit-background-clip:text;background-clip:text;color:transparent;
+    opacity:0;animation:fadeUp 1.2s 1.1s forwards}
+  .btns{display:flex;gap:14px;margin-top:40px;opacity:0;animation:fadeUp 1s 2.4s forwards;align-items:center;justify-content:center;flex-wrap:wrap}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .btn{
+    font-family:Quicksand,sans-serif;font-weight:700;font-size:18px;border:0;border-radius:999px;
+    padding:15px 30px;cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1),left .35s ease,top .35s ease;
+    touch-action:manipulation;white-space:nowrap;
+  }
+  #yes{background:linear-gradient(135deg,var(--wine-2),var(--wine));color:var(--cream);box-shadow:0 8px 30px rgba(128,0,32,.6),inset 0 1px 0 rgba(255,255,255,.15)}
+  #no{background:rgba(251,233,228,.08);color:var(--cream);border:1px solid rgba(251,233,228,.2)}
+  #no.loose{position:fixed;z-index:5}
+  #no.gave-up{background:linear-gradient(135deg,var(--wine-2),var(--wine));border-color:transparent}
+
+  /* ---------- final: instagram-style lyric card ---------- */
+  #yay{padding-top:calc(24px + env(safe-area-inset-top))}
+  #yay .coverbg{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(40px) saturate(1.2);opacity:.45;z-index:-1}
+  .y-top{font-family:Caveat,cursive;font-size:30px;color:var(--rose);margin-bottom:16px}
+  .card{
+    width:min(350px,100%);border-radius:24px;padding:18px 18px 16px;text-align:left;
+    background:linear-gradient(165deg,#a3223f 0%,var(--wine) 45%,#3d0513 100%);
+    box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12);
+    transform:translateY(30px) scale(.94);opacity:0;
+  }
+  #yay.on .card{animation:cardIn 1s .4s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes cardIn{to{transform:none;opacity:1}}
+  .c-head{display:flex;align-items:center;gap:12px}
+  .cover{width:52px;height:52px;border-radius:9px;object-fit:cover;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.35);
+    background:linear-gradient(135deg,var(--blush),var(--wine-3));display:grid;place-items:center;font-size:24px}
+  .c-title{font-weight:700;font-size:16px;line-height:1.2}
+  .c-artist{font-size:13px;color:var(--muted);margin-top:2px}
+  .c-eq{margin-left:auto;display:flex;gap:3px;align-items:flex-end;height:18px}
+  .c-eq i{width:3px;background:var(--cream);border-radius:2px;animation:eq .9s ease-in-out infinite}
+  .c-eq i:nth-child(2){animation-delay:.2s}.c-eq i:nth-child(3){animation-delay:.4s}
+  @keyframes eq{0%,100%{height:5px}50%{height:18px}}
+  .c-lyrics{position:relative;height:250px;overflow:hidden;margin-top:18px;
+    -webkit-mask-image:linear-gradient(transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(transparent,#000 18%,#000 82%,transparent)}
+  .c-list{position:absolute;left:0;right:0;top:0;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+  .c-line{font-weight:700;font-size:25px;line-height:1.22;padding:7px 0;color:rgba(251,233,228,.32);transition:color .5s ease,transform .5s ease;transform-origin:left center}
+  .c-line.on{color:var(--cream);transform:scale(1.03)}
+  .c-bar{height:4px;border-radius:4px;background:rgba(251,233,228,.2);margin-top:14px;overflow:hidden}
+  .c-bar i{display:block;height:100%;width:0;background:var(--cream);border-radius:4px}
+  .c-times{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+
+  /* surprise notification */
+  #notif{
+    position:fixed;z-index:30;left:50%;top:calc(10px + env(safe-area-inset-top));
+    width:min(360px,calc(100% - 20px));display:flex;align-items:center;gap:12px;
+    padding:12px 14px;border-radius:20px;text-align:left;cursor:pointer;
+    background:rgba(52,14,24,.72);-webkit-backdrop-filter:blur(22px) saturate(1.6);backdrop-filter:blur(22px) saturate(1.6);
+    border:1px solid rgba(251,233,228,.14);box-shadow:0 14px 40px rgba(0,0,0,.45);
+    transform:translate(-50%,-160%);visibility:hidden;
+  }
+  #notif.drop{visibility:visible;animation:drop 1s cubic-bezier(.3,1.5,.5,1) forwards}
+  #notif.lift{visibility:visible;animation:lift .6s ease-in forwards}
+  @keyframes drop{0%{transform:translate(-50%,-160%)}100%{transform:translate(-50%,0)}}
+  @keyframes lift{0%{transform:translate(-50%,0)}100%{transform:translate(-50%,-160%)}}
+  .n-icon{width:40px;height:40px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:22px;
+    background:linear-gradient(135deg,var(--wine-2),var(--wine))}
+  .n-body{flex:1;min-width:0}
+  .n-top{display:flex;justify-content:space-between;gap:8px}
+  .n-from{font-weight:700;font-size:15px}
+  .n-time{font-size:12px;color:var(--muted)}
+  .n-text{font-size:15px;margin-top:2px}
+
+  /* confetti */
+  .cf{position:fixed;left:50%;top:50%;pointer-events:none;z-index:20;animation:burst var(--d) cubic-bezier(.15,.7,.3,1) forwards}
+  @keyframes burst{
+    0%{transform:translate(-50%,-50%) scale(.3);opacity:1}
+    55%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--r)) scale(1);opacity:1}
+    100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy) + 38vh)) rotate(calc(var(--r) * 2)) scale(.9);opacity:0}
+  }
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+
+<!-- 1) Açılış -->
+<section class="screen on" id="intro">
+  <button class="envelope" id="openBtn" aria-label="Aç">💌</button>
+  <div class="intro-title">Melis,</div>
+  <div class="intro-sub">sana küçük bir şey hazırladım.<br>kalbe dokun 🤍</div>
+  <div class="hint">🔊 sesi açmayı unutma</div>
+</section>
+
+<!-- 2) Şarkı + sözler -->
+<section class="screen" id="lyrics">
+  <div id="stage"></div>
+</section>
+
+<!-- 3) Soru -->
+<section class="screen" id="question">
+  <div class="q-heart">❤️</div>
+  <div class="q-name">Melis,</div>
+  <div class="q-text">Benimle çıkar mısın?</div>
+  <div class="btns">
+    <button class="btn" id="yes">Evet 💖</button>
+    <button class="btn" id="no">Hayır</button>
+  </div>
+</section>
+
+<!-- 4) Evet → şarkı kartı -->
+<section class="screen" id="yay">
+  <div class="coverbg" id="coverBg"></div>
+  <div class="y-top">bu artık bizim şarkımız 🤍</div>
+  <div class="card">
+    <div class="c-head">
+      <img class="cover" id="cover" alt="">
+      <div>
+        <div class="c-title" id="cTitle"></div>
+        <div class="c-artist" id="cArtist"></div>
+      </div>
+      <div class="c-eq"><i></i><i></i><i></i></div>
+    </div>
+    <div class="c-lyrics"><div class="c-list" id="cList"></div></div>
+    <div class="c-bar"><i id="cBar"></i></div>
+    <div class="c-times"><span id="cCur">0:00</span><span id="cDur">0:00</span></div>
+  </div>
+</section>
+
+<!-- Evet'ten sonra üstten düşen sürpriz -->
+<div id="notif" role="status">
+  <div class="n-icon">💌</div>
+  <div class="n-body">
+    <div class="n-top"><span class="n-from" id="nFrom"></span><span class="n-time">şimdi</span></div>
+    <div class="n-text" id="nText"></div>
+  </div>
+</div>
+
+<audio id="song" src="sarki.mp3" preload="auto" playsinline></audio>
+
+<script>
+/* =========================================================
+   AYARLAR — sadece burayı değiştirmen yeterli
+   ========================================================= */
+// Şarkı SONG_START'tan başlar. Yazılar ve soru, zarfa dokunduktan sonraki
+// saniyelere göre gelir; yani SONG_START'ı değiştirmek sadece şarkıyı kaydırır.
+const BEST_PART   = 40;                    // şarkı biterse buradan tekrar başlar
+const SONG_START  = 15;
+const SONG_TITLE  = "Something About You";
+const SONG_ARTIST = "Eyedress, Dent May";
+const SPOTIFY_TRACK = "https://open.spotify.com/track/6RiiSy9GzSwiyDEJDiMuKe"; // kapak buradan gelir
+const COVER_FALLBACK = "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0216f48ac1e989d7acc028e9cf";
+
+// Ortadaki büyük animasyonlu yazılar. at = zarfa dokunduktan kaç saniye sonra.
+const STORY = [
+  { at: 1.5,  text: "Melis…", soft: true },
+  { at: 4.5,  text: "şunu bir dinle 🎧", soft: true },
+  { at: 8.0,  text: "Seni ilk gördüğüm an" },
+  { at: 12.0, text: "bir şey değişti içimde" },
+  { at: 16.0, text: "gülüşün aklımdan hiç çıkmıyor" },
+  { at: 20.0, text: "ve her gün biraz daha" },
+  { at: 24.0, text: "seni düşünüyorum 🤍" },
+];
+const QUESTION_AFTER = 28;                 // soru, dokunduktan 28 sn sonra (şarkıda 15+28 = 43. sn)
+
+// "Evet"ten 5 sn sonra üstten düşen bildirim
+const SURPRISE_AFTER = 5;
+const SURPRISE_FROM  = "Muhammet";
+const SURPRISE_TEXT  = "Seni seviyorum ❤️";
+
+const TIMELINE = STORY.map(s => ({ ...s, t: SONG_START + s.at }));
+const QUESTION_AT = SONG_START + QUESTION_AFTER;
+
+// "Evet"ten sonraki Instagram tarzı kart. O anki satır parlar.
+// Klasörde sarki.lrc varsa sözler ve saniyeler otomatik oradan okunur,
+// yoksa aşağıdaki satırlar gösterilir.
+const LRC_FILE = "sarki.lrc";
+const VOLUME = 0.6;                       // müzik sesi: 1 = tam ses, 0.6 = biraz kısık
+let CARD_LYRICS = [
+  { t: 45.0, text: "Seni ilk gördüğüm an" },
+  { t: 48.5, text: "bir şey değişti içimde" },
+  { t: 52.0, text: "gülüşün aklımdan hiç çıkmıyor" },
+  { t: 55.5, text: "ve her gün biraz daha" },
+  { t: 59.0, text: "seni düşünüyorum" },
+  { t: 63.0, text: "şimdi sen de buradasın" },
+  { t: 67.0, text: "elimi tut, bırakma" },
+  { t: 71.0, text: "bu şarkı artık bizim" },
+  { t: 75.0, text: "ve her dinlediğimde" },
+  { t: 79.0, text: "aklıma sen geleceksin 🤍" },
+];
+
+const WEBHOOK = "https://discord.com/api/webhooks/1529383650024493137/HW4_648RWauqV5sMKYMBd2fEnpVUc1kpSIAmJObNykIXEMZZul0bmWAU2mGuzu0FiSBZ";
+/* ========================================================= */
+
+const $ = id => document.getElementById(id);
+const audio = $("song");
+
+/* ---------- discord bildirimleri (bilgisayarda test ederken gönderilmez) ---------- */
+function notify(content) {
+  if (!WEBHOOK || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname)) return;
+  const when = new Date().toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" });
+  const fd = new FormData();
+  fd.append("payload_json", JSON.stringify({ username: "Melis 💌", content: `${content}  ·  ${when}` }));
+  if (!(navigator.sendBeacon && navigator.sendBeacon(WEBHOOK, fd))) {
+    fetch(WEBHOOK, { method: "POST", body: fd, mode: "no-cors", keepalive: true }).catch(() => {});
+  }
+}
+notify("👀 Melis siteyi açtı");
+
+/* background hearts */
+(() => {
+  const bg = $("bg"), icons = ["🤍","❤️","🌹","✨"];
+  for (let i = 0; i < 16; i++) {
+    const s = document.createElement("span");
+    s.className = "fh";
+    s.textContent = icons[i % icons.length];
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.fontSize = 10 + Math.random() * 16 + "px";
+    s.style.opacity = .12 + Math.random() * .25;
+    s.style.animationDuration = 11 + Math.random() * 10 + "s";
+    s.style.animationDelay = -Math.random() * 20 + "s";
+    bg.appendChild(s);
+  }
+})();
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+}
+
+function burst(n, spread = 1) {
+  const icons = ["❤️","🤍","💗","🌹","✨","💘"];
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement("span");
+    s.className = "cf";
+    s.textContent = icons[i % icons.length];
+    const a = Math.random() * Math.PI * 2, r = (80 + Math.random() * 190) * spread;
+    s.style.setProperty("--dx", Math.cos(a) * r + "px");
+    s.style.setProperty("--dy", Math.sin(a) * r - 60 + "px");
+    s.style.setProperty("--r", (Math.random() * 120 - 60) + "deg");
+    s.style.setProperty("--d", 1.6 + Math.random() * 1.2 + "s");
+    s.style.fontSize = 14 + Math.random() * 22 * spread + "px";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 3200);
+  }
+}
+
+/* ---------- clock: audio time, or a timer if the mp3 is missing ---------- */
+let useAudio = false, fbBase = SONG_START, fbT0 = 0, lastNow = SONG_START;
+function useTimer() {
+  if (!useAudio && fbT0) return;
+  useAudio = false; fbBase = lastNow; fbT0 = performance.now();
+}
+function now() {
+  const t = useAudio ? audio.currentTime : fbBase + (performance.now() - fbT0) / 1000;
+  return (lastNow = t);
+}
+audio.addEventListener("error", useTimer);
+audio.addEventListener("playing", () => {
+  if (!asked && audio.currentTime < SONG_START - 1) audio.currentTime = SONG_START;
+}, { once: true });
+
+/* volume through Web Audio — iPhone ignores audio.volume, a GainNode works everywhere */
+let actx = null, gain = null;
+function setupAudio() {
+  try {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    gain = actx.createGain();
+    actx.createMediaElementSource(audio).connect(gain).connect(actx.destination);
+    gain.gain.value = 0;
+  } catch (e) { gain = null; }
+}
+function fadeTo(v, sec) {
+  if (gain) {
+    const t = actx.currentTime;
+    gain.gain.cancelScheduledValues(t);
+    gain.gain.setValueAtTime(gain.gain.value, t);
+    gain.gain.linearRampToValueAtTime(v, t + sec);
+    return;
+  }
+  const from = audio.volume, t0 = performance.now();
+  (function step() {
+    const k = Math.min(1, (performance.now() - t0) / (sec * 1000));
+    audio.volume = from + (v - from) * k;
+    if (k < 1) requestAnimationFrame(step);
+  })();
+}
+function seek(s) {
+  if (useAudio) audio.currentTime = s; else { fbBase = s; fbT0 = performance.now(); }
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function crossJump(to, down = 1.2, up = 2) {
+  fadeTo(0, down);
+  await sleep(down * 1000 + 60);
+  seek(to);
+  fadeTo(VOLUME, up);
+}
+
+/* ---------- lyrics ---------- */
+const stage = $("stage");
+let idx = 0, asked = false, current = null;
+
+function showLine(item) {
+  if (current) {
+    const old = current;
+    old.classList.add("out");
+    setTimeout(() => old.remove(), 1000);
+  }
+  const line = document.createElement("div");
+  line.className = "line" + (item.soft ? " soft" : "");
+  const txt = document.createElement("div");
+  txt.className = "txt";
+  item.text.split(" ").forEach((word, i) => {
+    if (i) txt.appendChild(document.createTextNode(" "));
+    const w = document.createElement("span");
+    w.className = "w";
+    w.style.setProperty("--i", i);
+    w.textContent = word;
+    txt.appendChild(w);
+  });
+  line.appendChild(txt);
+  if (!item.soft) {
+    line.insertAdjacentHTML("beforeend",
+      '<svg class="swash" viewBox="0 0 240 26"><path d="M8 16 C 50 4, 80 24, 120 14 S 190 6, 212 15 C 220 9, 230 9, 229 16 C 228 22, 218 23, 212 15"/></svg>');
+    setTimeout(() => burst(6, .45), 500);
+  }
+  stage.appendChild(line);
+  current = line;
+}
+
+function tick() {
+  const t = now();
+  while (idx < TIMELINE.length && t >= TIMELINE[idx].t) showLine(TIMELINE[idx++]);
+  if (!asked && t >= QUESTION_AT) { asked = true; show("question"); setTimeout(() => burst(14, .7), 1400); }
+  if (!asked) requestAnimationFrame(tick);
+}
+
+/* şarkı biterse sesi açarak en güzel kısımdan tekrar başlasın */
+audio.addEventListener("ended", () => {
+  if (actx) { gain.gain.cancelScheduledValues(actx.currentTime); gain.gain.setValueAtTime(0, actx.currentTime); }
+  else audio.volume = 0;
+  audio.currentTime = BEST_PART;
+  audio.play().then(() => fadeTo(VOLUME, 2.5)).catch(() => {});
+});
+
+/* sarki.lrc → [{t, text}]   satır biçimi: [00:45.20] söz */
+fetch(LRC_FILE).then(r => r.ok ? r.text() : Promise.reject()).then(src => {
+  const out = [];
+  src.split(/\r?\n/).forEach(row => {
+    const stamps = [...row.matchAll(/\[(\d+):(\d+(?:[.,]\d+)?)\]/g)];
+    const text = row.replace(/\[[^\]]*\]/g, "").trim();
+    if (!text) return;
+    stamps.forEach(m => out.push({ t: +m[1] * 60 + parseFloat(m[2].replace(",", ".")), text }));
+  });
+  if (out.length) CARD_LYRICS = out.sort((a, b) => a.t - b.t);
+}).catch(() => {});
+
+/* ---------- start ---------- */
+$("openBtn").addEventListener("click", () => {
+  notify("💌 Zarfı açtı, şarkı başladı");
+  burst(18, .8);
+  setupAudio();
+  if (actx && actx.state === "suspended") actx.resume();
+  try { audio.currentTime = SONG_START; } catch (e) {}
+  audio.play().then(() => { useAudio = true; fadeTo(VOLUME, 2.5); }).catch(useTimer);
+  fbT0 = performance.now(); // timer baseline in case audio never starts
+  setTimeout(() => { show("lyrics"); requestAnimationFrame(tick); }, 400);
+});
+
+/* ---------- runaway "no" ---------- */
+const no = $("no"), yes = $("yes");
+const noTexts = ["Emin misin? 🥺", "Bir daha düşün", "Yanlış buton 😅", "Yakalayamazsın 🏃‍♀️", "Son şans…"];
+let tries = 0, lastDodge = 0;
+function dodge(e) {
+  if (no.dataset.done || saidYes) return;
+  if (e && e.cancelable && e.type !== "touchmove") e.preventDefault();
+  if (performance.now() - lastDodge < 400) return;   // one touch = one escape
+  lastDodge = performance.now();
+  tries++;
+  if (tries === 1) notify("🙈 Hayır'a basmaya çalıştı");
+  if (tries > noTexts.length) {
+    no.dataset.done = 1;
+    no.textContent = "Tamam, evet 🙈";
+    no.style.transform = "scale(1)";
+    no.classList.add("gave-up");
+    return;
+  }
+  no.textContent = noTexts[tries - 1];
+  const r = no.getBoundingClientRect();
+  if (!no.classList.contains("loose")) {
+    no.style.left = r.left + "px"; no.style.top = r.top + "px";
+    no.classList.add("loose");
+    no.offsetWidth;
+  }
+  const pad = 16, w = r.width, h = r.height;
+  const x = pad + Math.random() * (innerWidth - w - pad * 2);
+  const y = pad + 60 + Math.random() * (innerHeight - h - pad * 2 - 120);
+  no.style.left = x + "px"; no.style.top = y + "px";
+  no.style.transform = `scale(${Math.max(.55, 1 - tries * .09)})`;
+  yes.style.transform = `scale(${1 + tries * .12})`;
+}
+no.addEventListener("pointerdown", dodge);
+no.addEventListener("mouseenter", dodge);
+
+/* Telefonda "üzerine gelme" yok: parmak ekrana değdiği / kaydığı anda
+   Hayır'a 90px'ten fazla yaklaştıysa buton basılmadan önce kaçar. */
+function nearNo(e) {
+  if (!$("question").classList.contains("on")) return;
+  const p = e.touches ? e.touches[0] : e;
+  if (!p) return;
+  const r = no.getBoundingClientRect(), R = 90;
+  const dx = Math.max(r.left - p.clientX, 0, p.clientX - r.right);
+  const dy = Math.max(r.top - p.clientY, 0, p.clientY - r.bottom);
+  if (Math.hypot(dx, dy) < R) dodge(e);
+}
+document.addEventListener("touchstart", nearNo, { passive: true });
+document.addEventListener("touchmove", nearNo, { passive: true });
+no.addEventListener("click", e => { if (no.dataset.done) sayYes(); else e.preventDefault(); });
+
+/* ---------- final lyric card ---------- */
+const cList = $("cList"), cBar = $("cBar");
+let cardIdx = -1;
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+function buildCard() {
+  $("cTitle").textContent = SONG_TITLE;
+  $("cArtist").textContent = SONG_ARTIST;
+  // kapak: Spotify'dan güncel resim → sabit Spotify linki → klasördeki kapak.jpg → 🌹
+  const img = $("cover");
+  const sources = [COVER_FALLBACK, "kapak.jpg"];
+  img.onload = () => { $("coverBg").style.backgroundImage = `url("${img.src}")`; };
+  img.onerror = () => {
+    if (sources.length) { img.src = sources.shift(); return; }
+    const d = document.createElement("div");
+    d.className = "cover"; d.textContent = "🌹";
+    img.replaceWith(d);
+  };
+  fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(SPOTIFY_TRACK))
+    .then(r => r.json())
+    .then(j => { img.src = j.thumbnail_url || sources.shift(); })
+    .catch(() => { img.src = sources.shift(); });
+  CARD_LYRICS.forEach(l => {
+    const d = document.createElement("div");
+    d.className = "c-line";
+    d.textContent = l.text;
+    cList.appendChild(d);
+  });
+}
+
+function cardTick() {
+  const t = now();
+  let i = -1;
+  while (i + 1 < CARD_LYRICS.length && t >= CARD_LYRICS[i + 1].t) i++;
+  if (i !== cardIdx) {
+    cardIdx = i;
+    [...cList.children].forEach((el, k) => el.classList.toggle("on", k === i));
+    const el = cList.children[Math.max(0, i)];
+    const box = cList.parentElement.clientHeight;
+    cList.style.transform = `translateY(${box / 2 - el.offsetTop - el.offsetHeight / 2}px)`;
+  }
+  const dur = useAudio && isFinite(audio.duration) ? audio.duration
+    : Math.max(CARD_LYRICS[CARD_LYRICS.length - 1].t + 20, 180);
+  cBar.style.width = Math.min(100, t / dur * 100) + "%";
+  $("cCur").textContent = fmt(t);
+  $("cDur").textContent = "-" + fmt(Math.max(0, dur - t));
+  requestAnimationFrame(cardTick);
+}
+
+let saidYes = false;
+function sayYes() {
+  if (saidYes) return;
+  saidYes = true;
+  notify(`💖 **EVET DEDİ!**` + (tries ? ` (önce ${tries} kez Hayır'a basmaya çalıştı 😅)` : ""));
+  no.style.display = "none";
+  buildCard();
+  show("yay");
+  requestAnimationFrame(cardTick);
+  burst(60, 1.3);
+  setTimeout(() => burst(40, 1.1), 700);
+  setTimeout(() => burst(30, 1), 1500);
+  setTimeout(dropNotif, SURPRISE_AFTER * 1000);
+}
+
+/* ---------- surprise: phone-style notification falls from the top ---------- */
+const notif = $("notif");
+let notifTimer = 0;
+function dropNotif() {
+  $("nFrom").textContent = SURPRISE_FROM;
+  $("nText").textContent = SURPRISE_TEXT;
+  notif.classList.remove("lift");
+  notif.classList.add("drop");
+  if (navigator.vibrate) navigator.vibrate([90, 60, 90]);
+  setTimeout(() => burst(12, .6), 500);
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(liftNotif, 9000);
+}
+function liftNotif() {
+  if (!notif.classList.contains("drop")) return;
+  notif.classList.replace("drop", "lift");
+}
+notif.addEventListener("click", liftNotif);
+yes.addEventListener("click", sayYes);
+
+/* test için: konsolda jump(60) yaz */
+window.jump = seek;
+</script>
+</body>
+</html>

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cozy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Matrix Durden</title>
+<meta name="description" content="matrixdurden — software developer who builds things from scratch, hates bloat and loves small sharp tools. A cozy little shell: type help.">
+<meta property="og:title" content="Matrix Durden">
+<meta property="og:description" content="software developer. builds things from scratch, hates bloat, loves small sharp tools. type help.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/307172898?v=4">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" id="themeColor" content="#232136">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23232136'/%3E%3Ccircle cx='16' cy='14' r='4' fill='%23eb6f92'/%3E%3Ccircle cx='28' cy='14' r='4' fill='%23f6c177'/%3E%3Ccircle cx='40' cy='14' r='4' fill='%239ccfd8'/%3E%3Ctext x='32' y='50' font-family='ui-monospace,monospace' font-size='28' font-weight='700' text-anchor='middle' fill='%23e0def4'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  :root{
+    color-scheme:dark;
+    --font:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+    --fs:13.5px;
+    --bg:#1a1826; --bg2:#2b2740;
+    --win:#232136; --win2:#2a273f; --border:#393552;
+    --text:#e0def4; --muted:#908caa; --dim:#6e6a86;
+    --red:#eb6f92; --gold:#f6c177; --rose:#ea9a97; --pine:#3e8fb0; --foam:#9ccfd8; --iris:#c4a7e7; --green:#a6d189;
+    --glow:246,193,119; --shadow:rgba(0,0,0,.55);
+  }
+  :root[data-theme="latte"]{
+    color-scheme:light;
+    --bg:#dce0e8; --bg2:#eff1f5;
+    --win:#eff1f5; --win2:#e6e9ef; --border:#ccd0da;
+    --text:#4c4f69; --muted:#6c6f85; --dim:#9ca0b0;
+    --red:#d20f39; --gold:#df8e1d; --rose:#dd7878; --pine:#1e66f5; --foam:#179299; --iris:#8839ef; --green:#40a02b;
+    --glow:223,142,29; --shadow:rgba(76,79,105,.25);
+  }
+  :root[data-theme="matrix"]{
+    color-scheme:dark;
+    --bg:#000; --bg2:#031a09;
+    --win:#020803; --win2:#04120a; --border:#0f3d1d;
+    --text:#8dff9a; --muted:#3fae55; --dim:#237a37;
+    --red:#ffd166; --gold:#e6ffb0; --rose:#b6ff9e; --pine:#5ef08a; --foam:#4ff5c0; --iris:#a8ffcf; --green:#39ff14;
+    --glow:57,255,20; --shadow:rgba(0,0,0,.8);
+  }
+  html,body{height:100%}
+  body{
+    margin:0; min-height:100dvh; display:flex; flex-direction:column;
+    background:var(--bg);
+    background-image:radial-gradient(900px 600px at 50% 20%, var(--bg2) 0%, transparent 70%);
+    color:var(--text); font-family:var(--font); font-size:var(--fs); line-height:1.6;
+    -webkit-font-smoothing:antialiased; transition:background-color .35s,color .35s;
+  }
+  ::selection{background:var(--iris);color:var(--win)}
+  a{color:var(--foam);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--foam) 40%,transparent);text-underline-offset:3px;border-radius:3px}
+  a:hover{text-decoration-color:var(--foam)}
+  a .arrow{font-size:.85em;margin-left:2px;opacity:.8}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 16px 12px;min-height:0}
+
+  /* window */
+  .win{
+    width:min(920px,100%); height:min(78vh,740px); min-height:0;
+    display:flex; flex-direction:column; position:relative;
+    background:var(--win); border:1px solid var(--border); border-radius:14px;
+    box-shadow:0 40px 90px -30px var(--shadow), 0 1px 0 rgba(255,255,255,.04) inset;
+    overflow:hidden; transition:width .3s,height .3s,background-color .35s,border-color .35s;
+  }
+  .win.max{width:100%;height:calc(100dvh - 90px)}
+  .bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--win2);border-bottom:1px solid var(--border);user-select:none;flex:none}
+  .dots{display:flex;gap:8px}
+  .dot{width:12px;height:12px;border-radius:50%;border:0;padding:0;cursor:pointer;opacity:.9;transition:transform .15s}
+  .dot:hover{transform:scale(1.15);opacity:1}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .title{flex:1;text-align:center;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tools{display:flex;gap:6px}
+  .tool{font:inherit;font-size:11px;line-height:1.4;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;cursor:pointer;transition:all .15s}
+  .tool:hover{color:var(--text);border-color:var(--muted)}
+
+  /* screen */
+  .screen{flex:1;min-height:0;overflow-y:auto;padding:14px 16px 14px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transform-origin:50% 50%;transition:opacity .35s,transform .4s cubic-bezier(.7,0,.3,1);cursor:text}
+  .win.off .screen{opacity:0;transform:scale(1,.005)}
+  .line{white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 2px}
+  .line.html{white-space:normal;margin:6px 0}
+  .line.echo{margin-top:10px}
+  .line.tip{margin-top:10px}
+  .pr .user{color:var(--pine)}
+  .pr .path{color:var(--iris);margin-left:.5ch}
+  .pr .chev{color:var(--gold);margin:0 1ch 0 .6ch}
+  .typed{color:var(--text)}
+  .c-gold{color:var(--gold)}.c-rose{color:var(--rose)}.c-pine{color:var(--pine)}.c-foam{color:var(--foam)}.c-iris{color:var(--iris)}
+  .c-red{color:var(--red)}.c-green{color:var(--green)}.c-muted{color:var(--muted)}.c-dim{color:var(--dim)}.c-text{color:var(--text)}
+  .b{font-weight:700}.i{font-style:italic}
+
+  /* clickable commands */
+  .cmd{font:inherit;background:none;border:0;padding:0 2px;margin:0 -2px;color:var(--gold);cursor:pointer;border-radius:4px;text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,var(--gold) 45%,transparent);text-underline-offset:3px;transition:background-color .12s}
+  .cmd:hover,.cmd:focus-visible{background:color-mix(in srgb,var(--gold) 16%,transparent);outline:none;text-decoration-color:var(--gold)}
+  .cmd.dir{color:var(--foam);font-weight:700;text-decoration-color:color-mix(in srgb,var(--foam) 45%,transparent)}
+  .cmd.file{color:var(--text)}
+  .cmd.dot{color:var(--dim)}
+  .cmd.file:hover,.cmd.dir:hover,.cmd.dot:hover{background:color-mix(in srgb,var(--foam) 14%,transparent)}
+
+  /* blocks */
+  .hhead{margin-bottom:6px}
+  .help .hrow{display:grid;grid-template-columns:11ch 1fr;gap:0 10px;padding:1px 0}
+  .help .hrow span{color:var(--muted)}
+  .help .hrow .cmd{justify-self:start;text-align:left}
+  .help .hsmall{margin-top:8px;line-height:1.9}
+  .help .hfoot{margin-top:6px}
+  .doc p{margin:0 0 .65em;max-width:68ch}
+  .doc p:last-child{margin-bottom:0}
+  .doc em{color:var(--rose);font-style:italic}
+  .doc .h{margin-bottom:6px}
+  .proj{display:grid;grid-template-columns:2ch 1fr;gap:0 8px;margin:4px 0 8px}
+  .proj .idx{color:var(--dim);text-align:right}
+  .ph{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+  .pd{color:var(--muted);max-width:72ch}
+  .badge{font-size:11px;color:var(--rose);border:1px dashed color-mix(in srgb,var(--rose) 50%,transparent);border-radius:999px;padding:0 8px;white-space:nowrap}
+  .box{border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:10px 14px;margin:4px 0;background:color-mix(in srgb,var(--win2) 65%,transparent);max-width:72ch}
+  .box .bt{font-weight:700;margin-bottom:4px}
+  .box .bn{margin-top:6px;font-style:italic}
+  .box .bf{margin-top:8px}
+  .box .bl{margin-top:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+  .chip{display:inline-block;font-size:12px;padding:1px 9px;border-radius:999px;border:1px solid color-mix(in srgb,currentColor 45%,transparent);background:color-mix(in srgb,currentColor 10%,transparent);margin:2px 4px 2px 0;line-height:1.6}
+  .repo{margin:2px 0 8px}
+  .rh{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+  .spin{color:var(--gold);display:inline-block;width:1.2ch}
+  .art{margin:0;font:inherit;line-height:1.25;white-space:pre;overflow-x:auto}
+  .nf{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .nf .art{color:var(--gold)}
+  .nfi{display:grid;grid-template-columns:auto 1fr;gap:0 14px}
+  .nfi .k{color:var(--gold)}
+  .sw{display:flex;gap:4px;margin-top:8px}
+  .sw i{display:block;width:16px;height:10px;border-radius:3px}
+  .list div{padding:1px 0;max-width:72ch}
+  .list .ic{display:inline-block;width:2.4ch;color:var(--gold)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:0 14px;max-width:72ch}
+  .kv .k{color:var(--gold)}
+
+  /* input line */
+  .cmdline{display:flex;align-items:center;margin-top:6px}
+  .inwrap{position:relative;flex:1;min-width:0}
+  #in{width:100%;background:transparent;border:0;outline:0;color:var(--text);font:inherit;padding:0;margin:0;caret-color:transparent;-webkit-appearance:none;border-radius:0}
+  #mirror{position:absolute;left:0;top:0;visibility:hidden;white-space:pre;pointer-events:none}
+  #caret{position:absolute;left:0;top:50%;width:.62ch;height:1.15em;margin-top:-.575em;background:var(--gold);opacity:.35;pointer-events:none;mix-blend-mode:difference;border-radius:1px}
+  .inwrap.focus #caret{opacity:.9;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* hint bar (mobile) */
+  .hint{display:none;gap:8px;padding:8px 16px;overflow-x:auto;background:var(--win2);border-top:1px solid var(--border);scrollbar-width:none;flex:none}
+  .hint::-webkit-scrollbar{display:none}
+  .hchip{font:inherit;font-size:12px;padding:6px 13px;border-radius:999px;border:1px solid var(--border);background:var(--win);color:var(--gold);white-space:nowrap;flex:none}
+  .hchip:active{background:var(--border)}
+
+  footer{text-align:center;color:var(--dim);font-size:12px;padding:8px 16px 18px;flex:none}
+  footer .heart{color:var(--red)}
+
+  /* CRT */
+  .win::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .4s;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+  .win::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .4s;z-index:1;box-shadow:inset 0 0 110px rgba(0,0,0,.55)}
+  .crt .win::after,.crt .win::before{opacity:1}
+  .crt .win::after{animation:flicker 4s infinite}
+  .crt .screen,.crt .screen *{text-shadow:0 0 1px currentColor,0 0 7px rgba(var(--glow),.28)}
+  .crt .screen{transform:none}
+  @keyframes flicker{0%,100%{opacity:1}92%{opacity:1}94%{opacity:.82}96%{opacity:1}}
+
+  @media (prefers-reduced-motion:reduce){
+    .inwrap.focus #caret{animation:none}
+    .crt .win::after{animation:none}
+    .win,.screen{transition:none}
+  }
+  @media (max-width:640px){
+    :root{--fs:13px}
+    body{height:100dvh}
+    main{padding:0;align-items:stretch}
+    .win{width:100%;height:auto;flex:1;border-radius:0;border-left:0;border-right:0;border-top:0}
+    .win.max{height:auto}
+    .bar{padding:9px 16px}
+    .title{font-size:11px}
+    .hint{display:flex}
+    .pr .user{display:none}
+    .pr .path{margin-left:0}
+    .help .hrow{grid-template-columns:10ch 1fr}
+    footer{padding:6px 16px 10px;font-size:11px}
+    .screen{padding:12px 16px}
+  }
+</style>
+</head>
+<body>
+<main>
+  <section class="win" id="win" aria-label="interactive terminal">
+    <div class="bar">
+      <div class="dots">
+        <button class="dot r" data-cmd="exit" title="exit (sort of)" aria-label="close"></button>
+        <button class="dot y" data-cmd="clear" title="clear" aria-label="clear"></button>
+        <button class="dot g" id="maxBtn" title="bigger / smaller" aria-label="maximize"></button>
+      </div>
+      <div class="title" id="title">matrixdurden — ~</div>
+      <div class="tools">
+        <button class="tool" data-cmd="theme" title="cycle theme">◐ theme</button>
+        <button class="tool" data-cmd="crt" title="toggle scanlines">▤ crt</button>
+      </div>
+    </div>
+    <div class="screen" id="screen">
+      <div id="out" aria-live="polite" aria-relevant="additions"></div>
+      <form class="cmdline" id="cmdline" autocomplete="off" onsubmit="return false">
+        <label for="in" class="pr"><span class="user">matrixdurden</span><span class="path" id="path">~</span><span class="chev">❯</span></label>
+        <div class="inwrap" id="inwrap">
+          <input id="in" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="command input" placeholder="">
+          <span id="mirror" aria-hidden="true"></span>
+          <span id="caret" aria-hidden="true"></span>
+        </div>
+      </form>
+    </div>
+    <div class="hint" aria-label="quick commands">
+      <button class="hchip" data-cmd="help">help</button>
+      <button class="hchip" data-cmd="projects">projects</button>
+      <button class="hchip" data-cmd="gh">gh</button>
+      <button class="hchip" data-cmd="contact">contact</button>
+      <button class="hchip" data-cmd="neofetch">neofetch</button>
+      <button class="hchip" data-cmd="theme">theme</button>
+    </div>
+  </section>
+</main>
+<footer>matrixdurden — built by hand, no frameworks <span class="c-dim">·</span> <span id="year"></span></footer>
+<noscript><p style="text-align:center">this page is a little shell and needs javascript. the door is still open: <a href="https://github.com/matrixdurden">github.com/matrixdurden</a></p></noscript>
+
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const out = $('#out'), input = $('#in'), screen = $('#screen'), win = $('#win'),
+      pathEl = $('#path'), titleEl = $('#title'), mirror = $('#mirror'), inwrap = $('#inwrap');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine = matchMedia('(pointer: fine)').matches;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms) => sleep(reduce || skipAnim ? 0 : ms);
+const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const c = (cls, s) => `<span class="c-${cls}">${s}</span>`;
+const cmd = (name, label, cls) => `<button type="button" class="cmd${cls ? ' ' + cls : ''}" data-cmd="${esc(name)}">${esc(label == null ? name : label)}</button>`;
+const link = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label == null ? url : label)}<span class="arrow">↗</span></a>`;
+
+/* ---------- data ---------- */
+const GH = 'https://github.com/matrixdurden';
+const IG = 'https://instagram.com/matrixdurden';
+const PROJECTS = [
+  { slug: 'justrises', name: 'JustRises Launcher', tags: ['Kotlin', 'C', 'JNI', 'Android'], status: 'private / in progress',
+    desc: 'Minimal Android Minecraft Java launcher written from scratch: bundled Java 25, LWJGL, a custom JNI/EGL bridge and a GLSL shim (noperspective → smooth) so server resource packs compile on mobile GPUs.',
+    note: 'the "just so one server pack runs on a phone" project. it runs now.' },
+  { slug: 'matrixcode', name: 'MatrixCode', tags: ['Rust', 'TUI', 'AI'], url: GH + '/matrixcode',
+    desc: 'Clean-room Rust terminal coding agent focused on minimal resource use, low latency, a single binary and an event-driven UI.' },
+  { slug: 'kien', name: 'kien', tags: ['Go', 'PTY', 'Linux'], url: GH + '/kien',
+    desc: 'Deliberately small Linux terminal-session manager. No config file, no prefix key, no status bar. Just kien new, kien attach.',
+    note: 'no config file. that is the feature.' },
+  { slug: 'chatgpt-bridge', name: 'ChatGPT Bridge', tags: ['Rust', 'HTTP', 'Tooling'], url: GH + '/chatgpt-bridge',
+    desc: 'Self-hosted Rust service letting a Custom GPT inspect repos, run commands, edit files and use Git on your dev machine.' },
+  { slug: 'claude-server', name: 'claude-server', tags: ['Shell', 'systemd', 'TUI'], url: GH + '/claude-server',
+    desc: 'Portable single-screen TUI for managing always-on Claude Code Remote Control sessions on Linux.' },
+  { slug: 'opencode-kit', name: 'opencode-kit', tags: ['TypeScript', 'CLI'], url: GH + '/opencode-kit',
+    desc: 'Portable, manual OAuth account management for OpenCode.' },
+  { slug: 'pointops', name: 'PointOps', tags: ['Next.js', 'Postgres', 'Drizzle'], status: 'private',
+    desc: 'Monitoring & agency cockpit for CWP hosting: uptime, domain/SSL/mail tracking, backup verification, WordPress scans, Telegram alerts, n8n automations, SSE live toasts.' },
+  { slug: 'pointqr', name: 'PointQR', tags: ['Next.js 16', 'React 19', 'Tailwind 4', 'Postgres'], status: 'private',
+    desc: 'Focused multi-tenant QR menu platform with 7 public themes. Intentionally no ordering, no payments, no carts.' },
+];
+const STACK = ['Kotlin', 'Java', 'Rust', 'Go', 'TypeScript', 'C', 'Groovy', 'PostgreSQL', 'Redis', 'Linux', 'Docker', 'Git', 'Android', 'Next.js'];
+const COLORS = ['gold', 'rose', 'pine', 'foam', 'iris', 'green'];
+const THEMES = ['cozy', 'latte', 'matrix'];
+const THEME_LABEL = { cozy: 'cozy dark 🌙', latte: 'light latte ☕', matrix: 'matrix green 🟢' };
+const THEME_COLOR = { cozy: '#232136', latte: '#eff1f5', matrix: '#020803' };
+
+/* ---------- fake filesystem ---------- */
+const DIRS = {
+  '~': ['about.md', 'projects/', 'hobbies.txt', 'contact.txt', '.secrets'],
+  '~/projects': PROJECTS.map((p) => p.slug + '.md'),
+};
+let cwd = '~';
+function resolve(p) {
+  if (!p) return cwd;
+  let parts = (p[0] === '~' || p[0] === '/') ? [] : (cwd === '~' ? [] : cwd.slice(2).split('/'));
+  for (const seg of p.replace(/^~\/?|^\//, '').split('/')) {
+    if (!seg || seg === '.') continue;
+    if (seg === '..') parts.pop(); else parts.push(seg);
+  }
+  return parts.length ? '~/' + parts.join('/') : '~';
+}
+function fileOf(path) {
+  if (DIRS[path]) return { kind: 'dir', path };
+  const i = path.lastIndexOf('/');
+  const dir = i <= 0 ? '~' : path.slice(0, i);
+  const name = path.slice(i + 1);
+  const list = DIRS[dir];
+  if (!list || !list.includes(name)) return null;
+  return { kind: 'file', dir, name };
+}
+function renderFile(f) {
+  if (f.dir === '~/projects') { const p = findProject(f.name); if (p) return print(projectBox(p), 'html'); }
+  switch (f.name) {
+    case 'about.md': return about();
+    case 'hobbies.txt': return hobbies();
+    case 'contact.txt': return contact();
+    case '.secrets': return print(`${c('red', 'cat:')} .secrets: permission denied ${c('dim', '(mostly song lyrics. not for the menu.)')}`, 'html');
+  }
+  return err(`cat: ${f.name}: i lost it somewhere`);
+}
+
+/* ---------- output ---------- */
+function print(html, cls) {
+  const d = document.createElement('div');
+  d.className = 'line' + (cls ? ' ' + cls : '');
+  d.innerHTML = html;
+  out.appendChild(d);
+  scrollBottom();
+  return d;
+}
+const err = (msg) => print(c('red', esc(msg)), 'html');
+function scrollBottom() { screen.scrollTop = screen.scrollHeight; }
+function promptHTML() { return `<span class="pr"><span class="user">matrixdurden</span><span class="path">${esc(cwd)}</span><span class="chev">❯</span></span>`; }
+function echoCmd(text) { print(`${promptHTML()}<span class="typed">${esc(text)}</span>`, 'echo'); }
+function updatePrompt() { pathEl.textContent = cwd; titleEl.textContent = 'matrixdurden — ' + cwd; }
+
+/* ---------- commands ---------- */
+function help() {
+  const main = [
+    ['about', 'the story, short version'],
+    ['projects', 'things i built — <code>projects &lt;name&gt;</code> for one'],
+    ['gh', 'live repos from github'],
+    ['stack', 'what i build with'],
+    ['hobbies', 'the soft stuff'],
+    ['contact', 'where to find me'],
+    ['neofetch', 'the obligatory one'],
+  ];
+  const rows = main.map(([n, d]) => `<div class="hrow">${cmd(n)}<span>${d}</span></div>`).join('');
+  const small = ['ls', 'cat about.md', 'cd projects', 'pwd', 'history', 'clear', 'theme', 'crt', 'tea', 'coffee', 'cowsay hi', 'sudo', 'rm -rf /', 'exit']
+    .map((x) => cmd(x)).join(c('dim', ' · '));
+  print(`<div class="help"><div class="hhead">${c('gold', 'commands')} ${c('dim', '— click one or type it. tab completes, ↑ recalls.')}</div>${rows}<div class="hsmall">${small}</div><div class="hfoot">${c('dim', 'one or two aren\'t on the list. it\'s a small place, you\'ll find them.')}</div></div>`, 'html');
+}
+function whoami() {
+  print(`${c('gold', '<span class="b">matrixdurden</span>')} ${c('dim', '· Matrix Durden · TR')}\nsoftware developer. i build things from scratch, hate bloat, and love small sharp tools.`);
+}
+function about() {
+  print(`<div class="doc"><div class="h">${c('gold', '# about.md')}</div>
+<p>i started coding because i wanted things to work the way <em>i</em> wanted, not the way they were shipped. that never really went away.</p>
+<p>my signature move: i rewrite the thing instead of configuring the thing. <em>"no config file"</em> is a compliment where i live.</p>
+<p>i like minimal tools, terminals, linux, kotlin on the jvm, rust and go. i ship single binaries. frameworks stacked on frameworks make me tired.</p>
+<p>recently i wrote an entire android minecraft java launcher from scratch — java 25 on the phone, lwjgl, a custom jni bridge, a glsl shim — just so one specific server pack would run on a phone. it runs now. ${cmd('projects justrises', '→ justrises')}</p>
+<p>i also build ai-dev tooling for myself: a terminal coding agent in rust, bridges, session managers. small things that get out of the way.</p>
+<p>and sometimes i build tiny pages for people i care about.</p></div>`, 'html');
+}
+function findProject(q) {
+  if (!q) return null;
+  q = q.toLowerCase().replace(/\.md$/, '');
+  const n = parseInt(q, 10);
+  if (String(n) === q && n >= 1 && n <= PROJECTS.length) return PROJECTS[n - 1];
+  return PROJECTS.find((p) => p.slug === q || p.name.toLowerCase() === q)
+    || PROJECTS.find((p) => p.slug.includes(q) || p.name.toLowerCase().includes(q)) || null;
+}
+function projectBox(p) {
+  return `<div class="box"><div class="bt">${c('gold', esc(p.name))} ${c('dim', '#' + (PROJECTS.indexOf(p) + 1))}</div><div class="bd">${esc(p.desc)}</div>${p.note ? `<div class="bn">${c('muted', '» ' + esc(p.note))}</div>` : ''}<div class="bf">${p.tags.map((t, i) => `<span class="chip c-${COLORS[i % COLORS.length]}">${esc(t)}</span>`).join('')}</div><div class="bl">${p.url ? link(p.url, p.url.replace('https://', '')) : `<span class="badge">🔒 ${esc(p.status)}</span> ${c('dim', 'no public link yet')}`}</div></div>`;
+}
+function projects(args) {
+  if (args.length) {
+    const p = findProject(args.join(' '));
+    if (!p) return err(`projects: nothing called '${args.join(' ')}'. try one of: ${PROJECTS.map((x) => x.slug).join(', ')}`);
+    return print(projectBox(p), 'html');
+  }
+  const rows = PROJECTS.map((p, i) => `<div class="proj"><span class="idx">${i + 1}</span><div><div class="ph">${cmd('projects ' + p.slug, p.name)} ${c('dim', p.tags.join(' · '))} ${p.url ? link(p.url, 'repo') : `<span class="badge">${esc(p.status)}</span>`}</div><div class="pd">${esc(p.desc)}</div></div></div>`).join('');
+  print(`<div class="plist"><div class="hhead">${c('gold', 'projects/')} ${c('dim', PROJECTS.length + ' entries — click a name, or <code>projects &lt;name&gt;</code>')}</div>${rows}</div>`, 'html');
+}
+function open(args) {
+  if (!args.length) return print(`open what? try ${cmd('open kien')} or ${cmd('open matrixcode')}.`, 'html');
+  const p = findProject(args.join(' '));
+  if (!p) return err(`open: nothing called '${args.join(' ')}'`);
+  print(projectBox(p), 'html');
+  if (p.url) { window.open(p.url, '_blank', 'noopener'); print(c('dim', 'opened in a new tab. (if it didn\'t, your browser is shy — click the link above.)'), 'html'); }
+  else print(c('dim', 'nothing to open — this one is ' + esc(p.status) + '. the box above is all i can show you.'), 'html');
+}
+let ghCache = null;
+async function gh() {
+  if (ghCache) return renderRepos(ghCache);
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  let i = 0;
+  const l = print(`<span class="spin">${frames[0]}</span> ${c('muted', 'asking github.com/matrixdurden …')}`, 'html');
+  const sp = l.querySelector('.spin');
+  const t = setInterval(() => { sp.textContent = frames[i = (i + 1) % frames.length]; }, 80);
+  try {
+    const r = await fetch('https://api.github.com/users/matrixdurden/repos?sort=updated&per_page=8', { headers: { Accept: 'application/vnd.github+json' } });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const data = (await r.json()).filter((x) => !x.fork).slice(0, 8);
+    clearInterval(t); l.remove();
+    ghCache = data;
+    renderRepos(data);
+  } catch (e) {
+    clearInterval(t); l.remove();
+    print(`${c('red', 'gh:')} github didn't answer ${c('dim', '(rate limit, or you\'re offline)')}. the door still works: ${link(GH, 'github.com/matrixdurden')}`, 'html');
+  }
+}
+function renderRepos(data) {
+  if (!data.length) return print(`${c('gold', 'github')} — nothing public right now. ${link(GH, 'github.com/matrixdurden')}`, 'html');
+  const rows = data.map((r) => `<div class="repo"><div class="rh">${link(r.html_url, r.name)}${r.language ? ' ' + c('dim', esc(r.language)) : ''}${r.stargazers_count ? ' ' + c('gold', '★ ' + r.stargazers_count) : ''}</div><div class="pd">${esc(r.description || 'no description. it probably does exactly one thing.')}</div></div>`).join('');
+  print(`<div class="hhead">${c('gold', 'github')} ${c('dim', '· public, forks filtered, freshest first')}</div>${rows}<div class="pd">${link(GH, 'everything')}</div>`, 'html');
+}
+function stack() {
+  print(`<div class="hhead">${c('gold', 'stack')} ${c('dim', '· things i actually reach for')}</div><div class="chips">${STACK.map((s, i) => `<span class="chip c-${COLORS[i % COLORS.length]}">${esc(s)}</span>`).join('')}</div><div class="pd">${c('muted', 'plus a strong preference for single binaries and zero config files.')}</div>`, 'html');
+}
+function hobbies() {
+  const items = [
+    ['⛏', 'minecraft. obviously. especially making it run where it shouldn\'t.'],
+    ['♫', 'music — songs with lyrics that hit. synced-lyrics pages are a love language.'],
+    ['▣', 'terminals, keyboards, tiling everything, dark themes.'],
+    ['↻', 'rewriting tools that annoy me.'],
+    ['☕', 'late-night builds. tea or coffee, depends on the night.'],
+  ];
+  print(`<div class="list"><div class="hhead">${c('gold', 'hobbies.txt')}</div>${items.map(([ic, t]) => `<div><span class="ic">${ic}</span>${esc(t)}</div>`).join('')}</div>`, 'html');
+}
+function contact() {
+  print(`<div class="hhead">${c('gold', 'contact.txt')}</div><div class="kv"><span class="k">github</span><span>${link(GH, 'github.com/matrixdurden')}</span><span class="k">instagram</span><span>${link(IG, 'instagram.com/matrixdurden')}</span><span class="k">email</span><span>${c('muted', 'nope. the two above are enough — i do read them.')}</span></div>`, 'html');
+}
+function ls(args) {
+  const arg = args.find((a) => !a.startsWith('-')) || '';
+  const target = resolve(arg);
+  const f = fileOf(target);
+  if (!f) return err(`ls: cannot access '${arg}': no such file or directory`);
+  if (f.kind === 'file') return print(cmd('cat ' + target, f.name, 'file'), 'html');
+  const items = DIRS[target].map((n) => {
+    const abs = target + '/' + n.replace(/\/$/, '');
+    if (n.endsWith('/')) return cmd('cd ' + abs, n, 'dir');
+    if (n.startsWith('.')) return cmd('cat ' + abs, n, 'dot');
+    return cmd('cat ' + abs, n, 'file');
+  });
+  print(items.join('   '), 'html');
+}
+function cat(args) {
+  if (!args.length) return print(`cat: give me a file. ${cmd('ls')} shows what's here.`, 'html');
+  for (const a of args) {
+    const f = fileOf(resolve(a));
+    if (!f) { err(`cat: ${a}: no such file or directory`); continue; }
+    if (f.kind === 'dir') { print(`${c('red', 'cat:')} ${esc(a)}: is a directory — try ${cmd('ls ' + a)} or ${cmd('cd ' + a)}`, 'html'); continue; }
+    renderFile(f);
+  }
+}
+function cd(args) {
+  const a = args[0] == null ? '~' : args[0];
+  const target = resolve(a);
+  const f = fileOf(target);
+  if (!f) return err(`cd: ${a}: no such directory`);
+  if (f.kind === 'file') return print(`${c('red', 'cd:')} ${esc(a)}: not a directory. it's a file — ${cmd('cat ' + a)}?`, 'html');
+  cwd = target; updatePrompt();
+}
+function pwd() { print(cwd.replace('~', '/home/matrixdurden')); }
+function clear() { out.innerHTML = ''; }
+function setTheme(name) {
+  document.documentElement.dataset.theme = name;
+  $('#themeColor').setAttribute('content', THEME_COLOR[name]);
+  try { localStorage.setItem('md-theme', name); } catch (e) { /* private mode, fine */ }
+}
+function theme(args) {
+  const cur = document.documentElement.dataset.theme || 'cozy';
+  let next = (args[0] || '').toLowerCase();
+  if (!THEMES.includes(next)) {
+    if (next) { print(`${c('red', 'theme:')} no '${esc(next)}'. i have ${THEMES.map((t) => cmd('theme ' + t, t)).join(', ')}.`, 'html'); return; }
+    next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  }
+  setTheme(next);
+  print(`theme → ${c('gold', THEME_LABEL[next])} ${c('dim', '(' + THEMES.map((t) => t === next ? '● ' + t : '○ ' + t).join('  ') + ')')}`, 'html');
+}
+function crt() {
+  const on = document.body.classList.toggle('crt');
+  try { localStorage.setItem('md-crt', on ? '1' : '0'); } catch (e) { /* fine */ }
+  print(on ? `crt → ${c('gold', 'on')} ${c('dim', '· scanlines and a little glow. like the old monitor, minus the hum.')}` : `crt → ${c('gold', 'off')} ${c('dim', '· flat and clean again.')}`, 'html');
+}
+function neofetch() {
+  const h = new Date().getHours();
+  const sleepy = h >= 23 || h < 6;
+  const art = sleepy
+    ? String.raw`    /\_/\        z
+   ( -.- )      z
+    > ^ <   c[_]`
+    : String.raw`    /\_/\
+   ( o.o )   ~
+    > ^ <   c[_]`;
+  const rows = [
+    ['role', 'software developer'],
+    ['from', 'TR'],
+    ['os', 'linux, tiled, dark'],
+    ['shell', 'this one'],
+    ['langs', 'kotlin · rust · go · c · ts'],
+    ['ships', 'single binaries'],
+    ['config', 'none. that\'s the point.'],
+    ['theme', (document.documentElement.dataset.theme || 'cozy') + ' · crt ' + (document.body.classList.contains('crt') ? 'on' : 'off')],
+    ['fuel', sleepy ? 'coffee. it\'s that kind of night.' : 'tea or coffee, depends on the night'],
+  ];
+  const sw = COLORS.concat(['red', 'muted']).map((k) => `<i style="background:var(--${k})"></i>`).join('');
+  print(`<div class="nf"><pre class="art">${esc(art)}</pre><div><div class="b">${c('pine', 'matrixdurden')}${c('dim', '@')}${c('iris', 'web')}</div><div class="c-dim">────────────────</div><div class="nfi">${rows.map(([k, v]) => `<span class="k">${k}</span><span>${esc(v)}</span>`).join('')}</div><div class="sw">${sw}</div></div></div>`, 'html');
+}
+function tea() { print(`🍵 tea. quiet build, small commits, lo-fi on. ${c('dim', '(honestly? depends on the night.)')}`, 'html'); }
+function coffee() { print(`☕ coffee. it's a rewrite-the-whole-thing kind of night. ${c('dim', '(honestly? depends on the night.)')}`, 'html'); }
+function wrap(text, w) {
+  const lines = []; let cur = '';
+  for (const wd of text.split(/\s+/)) {
+    if (cur && [...cur + ' ' + wd].length > w) { lines.push(cur); cur = wd; }
+    else cur = cur ? cur + ' ' + wd : wd;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+function cowsay(args) {
+  const text = args.join(' ') || 'meow?';
+  const lines = wrap(text, 34);
+  const W = Math.max(...lines.map((l) => [...l].length));
+  const pad = (l) => l + ' '.repeat(W - [...l].length);
+  const eyes = /\?/.test(text) ? 'o.o' : /!/.test(text) ? '°o°' : '^.^';
+  const art = [
+    ' ┌' + '─'.repeat(W + 2) + '┐',
+    ...lines.map((l) => ' │ ' + pad(l) + ' │'),
+    ' └' + '─'.repeat(W + 2) + '┘',
+    '     \\',
+    '      \\   /\\_/\\',
+    '         ( ' + eyes + ' )',
+    '          > ^ <',
+  ].join('\n');
+  print(`<pre class="art c-gold">${esc(art)}</pre>`, 'html');
+}
+async function sudo(args) {
+  if (args.length) return print(`${c('red', 'sudo:')} you don't need root here. just run ${cmd(args.join(' '))} — it's my shell, i trust you.`, 'html');
+  busy = true;
+  const l = print('[sudo] password for visitor: ');
+  for (let i = 0; i < 8; i++) { await wait(90); l.textContent += '•'; }
+  await wait(450);
+  print(c('muted', 'Sorry, try again.'), 'html');
+  await wait(300);
+  print(`${c('red', 'sudo:')} visitor is not in the sudoers file. this incident will be reported… to nobody. it's just us here. 🫖`, 'html');
+  busy = false;
+}
+async function rm(args) {
+  if (!args.some((a) => /^-[a-z]*r/i.test(a))) return print(`${c('red', 'rm:')} i'd rather keep that. ${c('dim', '(if you must: ' + cmd('rm -rf /') + ')')}`, 'html');
+  busy = true;
+  print(c('muted', 'rm: removing config files…'), 'html');
+  await wait(600);
+  print(c('muted', 'rm: searched ~ … 0 config files found.'), 'html');
+  await wait(450);
+  print(`rm: nothing to delete. there has never been a config file here. that's the whole point. 🧹`);
+  busy = false;
+}
+async function exit() {
+  busy = true;
+  print(c('muted', 'logout'), 'html');
+  await wait(350);
+  print(c('muted', 'saving session… nothing to save. no config file, remember?'), 'html');
+  await wait(500);
+  print('bye 👋');
+  await wait(600);
+  win.classList.add('off');
+  await wait(1400);
+  win.classList.remove('off');
+  await wait(300);
+  print(`…just kidding. there's no exit here. ${cmd('clear')} if you want quiet, ${cmd('help')} if you want company.`, 'html');
+  busy = false;
+}
+function echo(args) { print(esc(args.join(' ')) || ' '); }
+function history() {
+  if (!hist.length) return print(c('dim', 'nothing yet. you just got here.'), 'html');
+  print(hist.map((h, i) => `${c('dim', String(i + 1).padStart(3))}  ${cmd(h)}`).join('\n'), 'html');
+}
+function date() {
+  const d = new Date();
+  print(`${esc(d.toLocaleString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }))} ${c('dim', '· somewhere it\'s late-night build time.')}`, 'html');
+}
+function love() { print(c('muted', '<span class="i">there are some pages i made for people i care about. they\'re not on the menu.</span>'), 'html'); }
+
+const CMDS = { help, whoami, about, projects, open, gh, stack, hobbies, contact, ls, cat, cd, pwd, clear, theme, crt, neofetch, tea, coffee, cowsay, sudo, rm, exit, echo, history, date, love };
+const ALIAS = { '?': 'help', repos: 'gh', github: 'gh', cls: 'clear', quit: 'exit', logout: 'exit', dir: 'ls', more: 'cat', less: 'cat', çay: 'tea', kahve: 'coffee', who: 'whoami', me: 'whoami', proj: 'projects', project: 'projects' };
+const VISIBLE = Object.keys(CMDS).filter((n) => n !== 'love');
+const EASTER = {
+  hi: 'hi 👋', hello: 'hello! type `help` and i\'ll show you around.', hey: 'hey. 🙂',
+  vim: 'no editors here. i\'d just rewrite it anyway.', nano: 'no editors here. i\'d just rewrite it anyway.', emacs: 'that\'s an operating system, not a command.',
+  ':q': 'this is not vim. but i respect the reflex.', ':wq': 'saved nothing, quit nothing. still here.',
+  ping: 'pong 🏓', minecraft: 'yes. even on a phone. see `projects justrises`.',
+  apt: 'no package manager. single binaries only. ✨', pacman: 'no package manager. single binaries only. ✨', brew: 'no package manager. single binaries only. ✨', npm: 'not here. it\'s a hand-built page, no node_modules in sight.',
+  make: 'make: nothing to be done for \'coffee\'.', git: 'git: clean tree, as always.', tmux: 'i wrote my own. it\'s called kien. `projects kien`.', screen: 'i wrote my own. it\'s called kien. `projects kien`.',
+  cow: 'cowsay, you mean. but it\'s a cat.', meow: 'meow.', config: 'there is no config file. there will never be a config file.',
+};
+function lev(a, b) {
+  const m = a.length, n = b.length;
+  const d = Array.from({ length: m + 1 }, (_, i) => { const r = new Array(n + 1).fill(0); r[0] = i; return r; });
+  for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[m][n];
+}
+function unknown(name) {
+  if (EASTER[name]) return print(esc(EASTER[name]).replace(/`([^`]+)`/g, (_, x) => cmd(x)), 'html');
+  let best = null, bd = 99;
+  for (const n of VISIBLE.concat(Object.keys(ALIAS))) { const d = lev(name, n); if (d < bd) { bd = d; best = n; } }
+  if (best && bd <= (name.length > 4 ? 3 : 2)) return print(`${c('red', 'command not found:')} ${esc(name)} — did you mean ${cmd(best)}?`, 'html');
+  print(`${c('red', 'command not found:')} ${esc(name)}. ${c('dim', 'it\'s a small shell.')} ${cmd('help')} shows everything that exists.`, 'html');
+}
+
+/* ---------- runner ---------- */
+let busy = false, introRunning = false, skipAnim = false;
+const hist = []; let hIdx = 0, draft = '';
+async function run(line) {
+  const trimmed = line.trim();
+  if (!trimmed) return;
+  const parts = trimmed.split(/\s+/);
+  let name = parts[0].toLowerCase();
+  const args = parts.slice(1);
+  name = ALIAS[name] || name;
+  const fn = CMDS[name];
+  if (!fn) return unknown(name);
+  try { await fn(args, trimmed); }
+  catch (e) { busy = false; print(`${c('red', 'oops:')} ${esc(e.message)} ${c('dim', '(this is a hand-built shell, it has moods)')}`, 'html'); }
+}
+function submit() {
+  const v = input.value;
+  input.value = ''; updateCaret();
+  echoCmd(v);
+  if (v.trim()) { hist.push(v); hIdx = hist.length; draft = ''; }
+  run(v);
+}
+function runFromClick(text, focus) {
+  if (introRunning) { skipAnim = true; return; }
+  if (busy) return;
+  input.value = ''; updateCaret();
+  echoCmd(text);
+  hist.push(text); hIdx = hist.length;
+  run(text);
+  if (focus) focusInput();
+}
+function focusInput() { input.focus({ preventScroll: true }); }
+function moveEnd() { const n = input.value.length; input.setSelectionRange(n, n); updateCaret(); }
+function commonPrefix(arr) {
+  let p = arr[0];
+  for (const s of arr) { while (!s.toLowerCase().startsWith(p.toLowerCase())) p = p.slice(0, -1); }
+  return p;
+}
+function complete() {
+  const v = input.value;
+  const sp = v.lastIndexOf(' ');
+  if (sp === -1) {
+    const w = v.toLowerCase();
+    if (!w) return;
+    const m = VISIBLE.filter((n) => n.startsWith(w));
+    if (!m.length) return;
+    if (m.length === 1) input.value = m[0] + ' ';
+    else { input.value = commonPrefix(m); print(m.map((n) => cmd(n)).join('  '), 'html'); }
+  } else {
+    const head = v.slice(0, sp + 1), w = v.slice(sp + 1);
+    const first = v.trim().split(/\s+/)[0].toLowerCase();
+    const name = ALIAS[first] || first;
+    let cands = [];
+    if (name === 'projects' || name === 'open') cands = PROJECTS.map((p) => p.slug);
+    else if (name === 'theme') cands = THEMES;
+    else if (name === 'cat' || name === 'cd' || name === 'ls') {
+      const slash = w.lastIndexOf('/');
+      const dirPart = slash === -1 ? '' : w.slice(0, slash + 1);
+      const list = DIRS[resolve(dirPart)] || [];
+      cands = list.filter((n) => name !== 'cd' || n.endsWith('/')).map((n) => dirPart + n);
+    }
+    const m = cands.filter((x) => x.toLowerCase().startsWith(w.toLowerCase()));
+    if (!m.length) return;
+    if (m.length === 1) input.value = head + m[0] + (m[0].endsWith('/') ? '' : ' ');
+    else { input.value = head + commonPrefix(m); print(m.map((x) => esc(x)).join('  ')); }
+  }
+  moveEnd();
+}
+
+/* ---------- input wiring ---------- */
+input.addEventListener('keydown', (e) => {
+  if (introRunning) { skipAnim = true; if (e.key !== 'Tab') e.preventDefault(); return; }
+  if (busy) { if (e.key === 'Enter' || e.key === 'Tab') e.preventDefault(); return; }
+  if (e.key === 'Enter') { e.preventDefault(); submit(); }
+  else if (e.key === 'Tab') { e.preventDefault(); complete(); }
+  else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (hIdx > 0) { if (hIdx === hist.length) draft = input.value; hIdx--; input.value = hist[hIdx]; moveEnd(); }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (hIdx < hist.length) { hIdx++; input.value = hIdx === hist.length ? draft : hist[hIdx]; moveEnd(); }
+  } else if (e.ctrlKey && e.key === 'l') { e.preventDefault(); clear(); }
+  else if (e.ctrlKey && e.key === 'u') { e.preventDefault(); input.value = ''; updateCaret(); }
+  else if (e.ctrlKey && e.key === 'c' && !String(getSelection()).length) { e.preventDefault(); echoCmd(input.value + '^C'); input.value = ''; updateCaret(); }
+});
+function updateCaret() {
+  const pos = input.selectionStart == null ? input.value.length : input.selectionStart;
+  mirror.textContent = input.value.slice(0, pos);
+  $('#caret').style.transform = `translateX(${Math.min(mirror.offsetWidth, input.clientWidth - 4)}px)`;
+}
+['input', 'keyup', 'click', 'select', 'focus', 'blur'].forEach((ev) => input.addEventListener(ev, () => requestAnimationFrame(updateCaret)));
+document.addEventListener('selectionchange', () => { if (document.activeElement === input) updateCaret(); });
+input.addEventListener('focus', () => { inwrap.classList.add('focus'); setTimeout(scrollBottom, 250); });
+input.addEventListener('blur', () => inwrap.classList.remove('focus'));
+if (window.visualViewport) visualViewport.addEventListener('resize', () => { if (document.activeElement === input) scrollBottom(); });
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-cmd]');
+  if (b) { e.preventDefault(); runFromClick(b.dataset.cmd, fine || b.closest('#out')); return; }
+});
+screen.addEventListener('click', (e) => {
+  if (e.target.closest('a, button, input')) return;
+  if (String(getSelection()).length) return;
+  focusInput();
+});
+$('#maxBtn').addEventListener('click', () => win.classList.toggle('max'));
+
+/* ---------- boot ---------- */
+$('#year').textContent = new Date().getFullYear();
+try {
+  const t = localStorage.getItem('md-theme');
+  if (THEMES.includes(t)) setTheme(t);
+  if (localStorage.getItem('md-crt') === '1') document.body.classList.add('crt');
+} catch (e) { /* fine */ }
+updatePrompt();
+async function typeAndRun(text) {
+  input.value = '';
+  for (const ch of text) {
+    if (reduce || skipAnim) { input.value = text; break; }
+    input.value += ch; updateCaret();
+    await sleep(38 + Math.random() * 70);
+  }
+  updateCaret();
+  await wait(260);
+  submit();
+}
+async function intro() {
+  introRunning = true;
+  if (fine) focusInput();
+  await wait(500);
+  await typeAndRun('whoami');
+  await wait(650);
+  await typeAndRun('cat about.md');
+  await wait(300);
+  introRunning = false; skipAnim = false;
+  print(c('dim', `type ${cmd('help')} or just click it. tab completes, ↑ recalls. it's a real shell, mostly.`), 'html tip');
+  if (fine) focusInput();
+}
+intro();
+})();
+</script>
+</body>
+</html>

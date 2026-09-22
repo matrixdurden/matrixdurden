@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matrix Durden</title>
+<meta name="description" content="Matrix Durden — software developer. Builds things from scratch, hates bloat, loves small sharp tools. A tiny pixel room you can click around.">
+<meta property="og:title" content="Matrix Durden">
+<meta property="og:description" content="Software developer. Builds things from scratch, hates bloat, loves small sharp tools. Click things.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/307172898?v=4">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#f6e7d7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17141f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%232b2233'/%3E%3Crect x='1' y='2' width='5' height='4' fill='%23fff7ea'/%3E%3Crect x='6' y='3' width='1' height='2' fill='%23fff7ea'/%3E%3Crect x='2' y='3' width='3' height='2' fill='%23ff7b8c'/%3E%3C/svg%3E">
+<script>(function(){try{var t=localStorage.getItem('md-theme');if(t!=='day'&&t!=='night')t=matchMedia('(prefers-color-scheme: dark)').matches?'night':'day';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','day');}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6e7d7; --text:#2b2233; --ink:#2b2233; --paper:#fff7ea; --muted:#7a6a72; --link:#4f6fd6;
+  --cK:#2b2233; --cW:#f4dcc4; --cw:#e9cdb0; --cF:#d9a774; --cf:#c08e5e;
+  --cD:#b5784b; --cd:#8a5735; --cL:#fff7ea; --cG:#c9cfda; --cg:#6b7284;
+  --ck:#1f2a44; --cB:#8fd0ff; --cb:#4f8fd6; --cR:#ff7b8c; --cY:#ffd35c;
+  --cE:#86d89a; --ce:#3f9a5c; --cS:#ffd6b3; --cH:#4a2f33; --cP:#a98cf0; --cp:#6f57bf;
+  --cO:#f5a35c; --sky:#a8dcff; --hill:#7fc98a; --glow:0; --screen-glow:0;
+}
+:root[data-theme="night"]{
+  --bg:#17141f; --text:#eee3d2; --ink:#14111a; --paper:#241f31; --muted:#a898b0; --link:#8fb1ff;
+  --cK:#14111a; --cW:#3a2f4d; --cw:#342a47; --cF:#4a3547; --cf:#3d2a3b;
+  --cD:#7a4f36; --cd:#553321; --cL:#efe1c8; --cG:#8d93a3; --cg:#4a5060;
+  --ck:#0f1a30; --cB:#5ba7f0; --cb:#2f63a8; --cR:#e2657a; --cY:#ffcf57;
+  --cE:#5fb877; --ce:#2f7a46; --cS:#e9c39f; --cH:#2e1e24; --cP:#8b70d8; --cp:#5843a0;
+  --cO:#d98a4a; --sky:#1c2650; --hill:#22344a; --glow:.55; --screen-glow:.35;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="day"]){
+    --bg:#17141f; --text:#eee3d2; --ink:#14111a; --paper:#241f31; --muted:#a898b0; --link:#8fb1ff;
+    --cK:#14111a; --cW:#3a2f4d; --cw:#342a47; --cF:#4a3547; --cf:#3d2a3b;
+    --cD:#7a4f36; --cd:#553321; --cL:#efe1c8; --cG:#8d93a3; --cg:#4a5060;
+    --ck:#0f1a30; --cB:#5ba7f0; --cb:#2f63a8; --cR:#e2657a; --cY:#ffcf57;
+    --cE:#5fb877; --ce:#2f7a46; --cS:#e9c39f; --cH:#2e1e24; --cP:#8b70d8; --cp:#5843a0;
+    --cO:#d98a4a; --sky:#1c2650; --hill:#22344a; --glow:.55; --screen-glow:.35;
+  }
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'VT323','Courier New',monospace; font-size:21px; line-height:1.25;
+  padding:16px; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  overflow-x:hidden;
+}
+.wrap{width:100%; max-width:960px; margin:0 auto}
+header.top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin:8px 0 14px}
+header.top > div{flex:1 1 auto; min-width:0}
+header.top .pxbtn{flex:0 0 auto; margin-top:2px}
+h1{font-family:'Press Start 2P',monospace; font-size:clamp(14px,3.4vw,22px); margin:0 0 8px; letter-spacing:.5px}
+.sub{margin:0; color:var(--muted); font-size:20px}
+.tag{display:inline-block; padding:0 6px; border:2px solid currentColor; font-family:'Press Start 2P',monospace; font-size:9px; line-height:16px; vertical-align:2px; margin-left:4px}
+.pxbtn{
+  font-family:'Press Start 2P',monospace; font-size:10px; padding:10px 12px; cursor:pointer;
+  color:var(--text); background:var(--paper); border:3px solid var(--text);
+  box-shadow:3px 3px 0 var(--text); text-decoration:none; display:inline-block; line-height:1;
+}
+.pxbtn:hover,.pxbtn:focus-visible{transform:translate(1px,1px); box-shadow:2px 2px 0 var(--text); outline:none}
+.pxbtn:active{transform:translate(3px,3px); box-shadow:none}
+
+.scene{
+  position:relative; width:100%; aspect-ratio:16/9; margin:0 auto;
+  border:4px solid var(--text); background:var(--cW);
+  box-shadow:0 0 0 4px var(--bg), 0 0 0 8px var(--text);
+}
+.scene svg{display:block; width:100%; height:100%; shape-rendering:crispEdges}
+.scene svg text{font-family:'Press Start 2P',monospace}
+.obj{cursor:pointer; outline:none; transition:transform .12s steps(2,end)}
+.obj:hover,.obj:focus-visible{transform:translateY(-1px)}
+.obj .ring{fill:none; stroke:var(--cY); stroke-width:1; stroke-dasharray:2 1; opacity:0; pointer-events:none}
+.obj:hover .ring,.obj:focus-visible .ring{opacity:1; animation:march .6s linear infinite}
+@keyframes march{to{stroke-dashoffset:-3}}
+.day-only{display:none}
+.night-only{display:none}
+:root[data-theme="day"] .day-only{display:block}
+:root[data-theme="night"] .night-only{display:block}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="day"]) .night-only{display:block}
+  :root:not([data-theme="day"]) .day-only{display:none}
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="night"]) .day-only{display:block}
+}
+.glow{opacity:var(--glow); transition:opacity .4s}
+.sglow{opacity:var(--screen-glow); transition:opacity .4s}
+.bob{animation:bob 1.6s steps(1,end) infinite}
+@keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(1px)}}
+.cursor{animation:blink 1s steps(1,end) infinite}
+@keyframes blink{50%{opacity:0}}
+.star{animation:tw 2.4s steps(1,end) infinite}
+.star:nth-child(2n){animation-delay:.8s}
+.star:nth-child(3n){animation-delay:1.5s}
+@keyframes tw{50%{opacity:.25}}
+.steam{animation:steam 2.2s steps(4,end) infinite; opacity:.85}
+.steam.s2{animation-delay:1.1s}
+@keyframes steam{0%{transform:translateY(0);opacity:.9}100%{transform:translateY(-4px);opacity:0}}
+.eyes-closed{display:none}
+.blink .eyes-open{display:none}
+.blink .eyes-closed{display:block}
+.reel-b{display:none}
+.spin .reel-a{display:none}
+.spin .reel-b{display:block}
+.frameB{display:none}
+.walk .frameA{display:none}
+.walk .frameB{display:block}
+.cat{display:none}
+.cat.on{display:block}
+
+.hint{
+  text-align:center; margin:14px 0 4px; color:var(--muted); font-size:20px; min-height:1.3em;
+  font-variant:none;
+}
+.hint b{color:var(--text); font-weight:normal}
+.hint .key{display:inline-block; font-family:'Press Start 2P',monospace; font-size:8px; border:2px solid var(--muted); padding:3px 5px; vertical-align:2px; margin:0 2px}
+footer{margin-top:auto; padding:22px 0 6px; text-align:center; color:var(--muted); font-size:18px}
+footer a{color:inherit}
+
+/* toast bubble inside scene */
+.toast{
+  position:absolute; transform:translate(-50%,-100%); z-index:3; pointer-events:none;
+  background:var(--paper); color:var(--text); border:3px solid var(--text); padding:6px 10px;
+  font-size:19px; line-height:1.1; white-space:nowrap; max-width:calc(100% - 16px);
+  box-shadow:3px 3px 0 var(--text); opacity:0; transition:opacity .15s;
+}
+.toast::after{content:""; position:absolute; left:50%; bottom:-9px; width:6px; height:6px; background:var(--paper); border:3px solid var(--text); border-top:0; border-left:0; transform:translateX(-50%) rotate(45deg)}
+.toast.on{opacity:1}
+@media (max-width:520px){.toast{white-space:normal; width:max-content; max-width:220px}}
+
+/* RPG dialogs */
+dialog{
+  border:0; padding:0; background:transparent; color:var(--text); max-width:none; max-height:none;
+  width:min(620px, calc(100vw - 32px)); margin:auto;
+}
+dialog::backdrop{background:rgba(20,16,30,.62)}
+.box{
+  background:var(--paper); border:4px solid var(--text); position:relative;
+  box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--text), 6px 6px 0 var(--text);
+  padding:22px 20px 18px; max-height:min(82vh,700px); overflow:auto;
+  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+}
+.box h2{font-family:'Press Start 2P',monospace; font-size:12px; margin:0 32px 14px 0; line-height:1.6; color:var(--text)}
+.box h2 small{display:block; font-family:'VT323',monospace; font-size:19px; color:var(--muted); margin-top:4px}
+.box p{margin:0 0 10px}
+.box .x{
+  position:absolute; top:10px; right:10px; width:30px; height:30px; padding:0; cursor:pointer;
+  font-family:'Press Start 2P',monospace; font-size:12px; line-height:1;
+  color:var(--text); background:var(--paper); border:3px solid var(--text);
+}
+.box .x:hover,.box .x:focus-visible{background:var(--text); color:var(--paper); outline:none}
+.muted{color:var(--muted)}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 14px}
+.chip{border:2px solid var(--text); padding:2px 8px; font-size:18px; line-height:1.2; background:var(--bg)}
+.cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; margin:0 0 14px}
+.card{border:3px solid var(--text); padding:10px 12px; background:var(--bg); display:flex; flex-direction:column; gap:4px}
+.card h3{font-family:'Press Start 2P',monospace; font-size:10px; margin:0 0 4px; line-height:1.5}
+.card .tags{font-size:17px; color:var(--muted); margin-top:auto}
+.card a,.links a{color:var(--link); text-decoration:none; border-bottom:2px solid currentColor}
+.card a:hover,.links a:hover{background:var(--link); color:var(--paper)}
+.card .priv{color:var(--muted); font-style:italic}
+.gh{border-top:3px dashed var(--muted); padding-top:12px; margin-top:6px}
+.gh ul{list-style:none; margin:6px 0 0; padding:0; display:grid; gap:6px}
+.gh li{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
+.gh li .d{color:var(--muted); flex:1 1 100%; font-size:18px}
+.gh li .s{color:var(--muted); font-size:17px}
+.links{display:flex; gap:10px; flex-wrap:wrap; margin:12px 0}
+.links .pxbtn{font-size:10px}
+.ava{width:56px; height:56px; image-rendering:pixelated; border:3px solid var(--text); float:right; margin:0 0 8px 12px}
+.px{display:block; width:100%; max-width:220px; margin:6px 0 12px}
+code{font-family:inherit; background:var(--bg); padding:0 4px; border:2px solid var(--muted)}
+
+/* about: speech bubble */
+.about{display:flex; gap:16px; align-items:flex-end}
+.about .me{flex:0 0 72px}
+.about .me svg{width:72px; height:auto; display:block; shape-rendering:crispEdges}
+.about .bubble{flex:1; min-height:120px; font-size:23px; line-height:1.2; cursor:pointer; position:relative; padding-right:22px}
+.about .arrow{position:absolute; right:0; bottom:0; font-family:'Press Start 2P',monospace; font-size:12px; animation:bounce .8s steps(2,end) infinite; opacity:0}
+.about .arrow.on{opacity:1}
+@keyframes bounce{50%{transform:translateY(3px)}}
+.about .pg{position:absolute; right:0; top:-14px; font-size:16px; color:var(--muted)}
+@media (max-width:520px){
+  .about{flex-direction:column; align-items:flex-start}
+  .about .me{flex-basis:auto}
+  body{font-size:20px}
+  .box{padding:18px 14px 14px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+  .obj:hover,.obj:focus-visible{transform:none}
+}
+.sr{position:absolute; left:-9999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Matrix Durden</h1>
+      <p class="sub">software developer · builds things from scratch <span class="tag" title="from Türkiye">TR</span></p>
+    </div>
+    <button class="pxbtn" id="themeBtn" type="button" aria-label="Toggle day / night">night</button>
+  </header>
+
+  <div class="scene" id="scene">
+    <svg id="svg" viewBox="0 0 192 108" role="group" aria-label="A tiny pixel room. Click the objects." xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <p class="hint" id="hint">click things <span class="muted">· <span class="key">TAB</span> to hop around, <span class="key">ESC</span> to leave</span></p>
+  <noscript><p class="hint">This page needs JavaScript for the room. Meanwhile: <a href="https://github.com/matrixdurden">GitHub</a> · <a href="https://instagram.com/matrixdurden">Instagram</a></p></noscript>
+</div>
+
+<footer>matrixdurden — built by hand, no frameworks · <span id="yr"></span></footer>
+
+<!-- ===== dialogs ===== -->
+<dialog id="d-projects" aria-labelledby="h-projects">
+  <div class="box">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <h2 id="h-projects">Projects <small>things I built because the existing thing annoyed me.</small></h2>
+    <div class="cards" id="cards"></div>
+    <div class="gh">
+      <p><b>fresh from GitHub</b> <span class="muted">— public repos, live</span></p>
+      <div id="gh-live"><p class="muted">poking GitHub…</p></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="d-stack" aria-labelledby="h-stack">
+  <div class="box">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <h2 id="h-stack">The shelf <small>what I reach for.</small></h2>
+    <div class="chips">
+      <span class="chip">Kotlin</span><span class="chip">Java</span><span class="chip">Rust</span><span class="chip">Go</span>
+      <span class="chip">TypeScript</span><span class="chip">C</span><span class="chip">Groovy</span><span class="chip">PostgreSQL</span>
+      <span class="chip">Redis</span><span class="chip">Linux</span><span class="chip">Docker</span><span class="chip">Git</span>
+      <span class="chip">Android</span><span class="chip">Next.js</span>
+    </div>
+    <p>Kotlin/JVM when it needs to live a long time. Rust when it needs to be fast and small. Go when it needs to be done by tonight. C when the phone says no.</p>
+    <p>I ship single binaries. I don't stack frameworks on frameworks. "No config file" is a compliment in my world.</p>
+    <p class="muted">Terminals, keyboards, tiling everything, dark themes. The green cube on top is a creeper. It's fine. It's always fine.</p>
+  </div>
+</dialog>
+
+<dialog id="d-phone" aria-labelledby="h-phone">
+  <div class="box">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <h2 id="h-phone">JustRises Launcher <small>Minecraft, on a phone that had no business running it.</small></h2>
+    <svg class="px" viewBox="0 0 44 16" shape-rendering="crispEdges" aria-hidden="true" id="phone-art"></svg>
+    <p>There's a specific server pack I wanted to play. On my phone. The launchers that existed couldn't run it — so I wrote one. From scratch.</p>
+    <p>Java 25 running on-device. LWJGL. A custom JNI/EGL bridge. And a tiny GLSL shim that rewrites <code>noperspective</code> to <code>smooth</code> so the server's resource pack actually compiles on mobile GPUs.</p>
+    <p>Minimal, private, in progress. It runs.</p>
+    <p class="muted">Kotlin · C · JNI · Android</p>
+  </div>
+</dialog>
+
+<dialog id="d-music" aria-labelledby="h-music">
+  <div class="box">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <h2 id="h-music">Side B <small>songs with lyrics that hit.</small></h2>
+    <p>Late-night builds have a soundtrack. Usually something with words that land a little too hard.</p>
+    <p>Sometimes I build tiny pages for people I care about — a song, the words, synced to the second. Synced lyrics are a love language. Those pages aren't for the internet, so no links. Sorry.</p>
+    <p class="muted">The headphones stay on the hook until the tea is ready.</p>
+  </div>
+</dialog>
+
+<dialog id="d-contact" aria-labelledby="h-contact">
+  <div class="box">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <h2 id="h-contact">The door <small>two ways in.</small></h2>
+    <img class="ava" src="https://avatars.githubusercontent.com/u/307172898?v=4" alt="" width="56" height="56" loading="lazy" onerror="this.remove()">
+    <p>No email on this page. If you want to say hi, these work:</p>
+    <div class="links">
+      <a class="pxbtn" href="https://github.com/matrixdurden" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="pxbtn" href="https://instagram.com/matrixdurden" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+    <p class="muted">The cat is not mine. It just walks through.</p>
+  </div>
+</dialog>
+
+<dialog id="d-about" aria-labelledby="h-about">
+  <div class="box">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <h2 id="h-about" class="sr">About</h2>
+    <div class="about">
+      <div class="me"><svg viewBox="0 0 12 28" aria-hidden="true" id="me-art"></svg></div>
+      <div class="bubble" id="bubble" tabindex="0" role="button" aria-label="Next line">
+        <span class="pg" id="pg"></span>
+        <span id="about-text"></span>
+        <span class="arrow" id="arrow">▼</span>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- pixel art ---------- */
+/* palette letters map to CSS vars --c<letter> ; '.' = transparent */
+var SPR = {
+me: [
+"....KKKK....",
+"...KHHHHK...",
+"..KHHHHHHK..",
+".KHHHHHHHHK.",
+".KHHHHHHHHK.",
+".KHSSHSSSHK.",
+".KSSSSSSSSK.",
+".KSKSSSSKSK.",
+".KSSSSSSSSK.",
+".KSSSSSSSSK.",
+"..KSSSSSSK..",
+"...KKSSKK...",
+"..KPPSSPPK..",
+".KPPPPPPPPK.",
+"KPPPPLLPPPPK",
+"KPPPPLLPPPPK",
+"KPKPPPPPPKPK",
+"KPKPPPPPPKPK",
+"KPKPPPPPPKPK",
+"KPKPPPPPPKPK",
+"KSKPPPPPPKSK",
+".KKPPPPPPKK.",
+"..KggggggK..",
+"..KggggggK..",
+"..KggKKggK..",
+"..KggK.KggK.",
+"..KggK.KggK.",
+".KKKKK.KKKKK"],
+catA: [
+"..KK.KK.........",
+"..KOKKOK........",
+"..KOOOOOK.....K.",
+"..KOKOKOK....KOK",
+"..KOOOOOKKKKKKOK",
+"...KOOOOOOOOOOK.",
+"...KOOOLLLOOOK..",
+"...KOKOOOOKOK...",
+"...KOK....KOK...",
+"...KKK....KKK..."],
+catB: [
+"..KK.KK.........",
+"..KOKKOK........",
+"..KOOOOOK.......",
+"..KOKOKOK.....K.",
+"..KOOOOOKKKKKKOK",
+"...KOOOOOOOOOOK.",
+"...KOOOLLLOOOK..",
+"...KOKOOOOKOK...",
+"....KOK..KOK....",
+"....KKK..KKK...."],
+monitor: [
+"KKKKKKKKKKKKKKKKKKKKKKKKKK",
+"KGGGGGGGGGGGGGGGGGGGGGGGGK",
+"KGKKKKKKKKKKKKKKKKKKKKKKGK",
+"KGKkkkkkkkkkkkkkkkkkkkkKGK",
+"KGKkEEkYYYYkkkkkkkkkkkkKGK",
+"KGKkkkkkkkkkkkkkkkkkkkkKGK",
+"KGKkLLLLLLLkkkkkkkkkkkkKGK",
+"KGKkLLLLkkkkkkkkkkkkkkkKGK",
+"KGKkLLLLLLLLLLkkkkkkkkkKGK",
+"KGKkkkkkkkkkkkkkkkkkkkkKGK",
+"KGKkEEkBBBBBBkkkkkkkkkkKGK",
+"KGKkkkkkkkkkkkkkkkkkkkkKGK",
+"KGKkEEkkkkkkkkkkkkkkkkkKGK",
+"KGKKKKKKKKKKKKKKKKKKKKKKGK",
+"KGGGGGGGGGGGGGGGGGGGGGGGGK",
+"KKKKKKKKKKKKKKKKKKKKKKKKKK",
+"...........KggK...........",
+"...........KggK...........",
+".......KKKKKKKKKKKK.......",
+".......KggggggggggK......."],
+keyboard: [
+"KKKKKKKKKKKKKKKKKK",
+"KGgGgGgGgGgGgGgGgK",
+"KKKKKKKKKKKKKKKKKK"],
+phone: [
+".KKKKKKKKK.",
+"KgggggggggK",
+"KgKKKKKKKgK",
+"KgKBBBBBKgK",
+"KgKBBBBBKgK",
+"KgKBBLBBKgK",
+"KgKBBBBBKgK",
+"KgKEEEEEKgK",
+"KgKeEeEeKgK",
+"KgKDdDdDKgK",
+"KgKdDdDdKgK",
+"KgKDdDdDKgK",
+"KgKKKKKKKgK",
+"KgggggggggK",
+"KgggLLLgggK",
+".KKKKKKKKK."],
+cup: [
+"KKKKKK..",
+"KLLLLK..",
+"KLLLLKKK",
+"KLRRLKLK",
+"KLRRLKLK",
+"KLLLLKKK",
+"KLLLLK..",
+".KKKK..."],
+lamp: [
+"KKKKKKKK....",
+"KYYYYYYK....",
+"KYYYYYYYK...",
+"KYYYYYYYYK..",
+"KKKKKKKKKKK.",
+".....KgK....",
+"......KgK...",
+".......KgK..",
+".......KgK..",
+".......KgK..",
+".......KgK..",
+".......KgK..",
+".....KKKKKKK",
+".....KgggggK",
+".....KKKKKKK"],
+tape: [
+"..KKKKKKKKKKKKKKKK..",
+".KGGGGGGGGGGGGGGGGK.",
+"KGKKKKKKKKKKKKKKKKGK",
+"KGKggKKggggggKKggKGK",
+"KGKgKLLKggggKLLKgKGK",
+"KGKgKLLKggggKLLKgKGK",
+"KGKggKKggggggKKggKGK",
+"KGKKKKKKKKKKKKKKKKGK",
+"KGRRKYYKGGGGGGGGGGGK",
+"KGGGGGGGGGGGGGGGGGGK",
+"KKKKKKKKKKKKKKKKKKKK"],
+reelA: [
+"gKLLKggggKLLKg",
+"gKLLKggggKLLKg"],
+reelB: [
+"gKLKKggggKKLKg",
+"gKKLKggggKLKKg"],
+phones: [
+"....KKKKKK....",
+"...KGGGGGGK...",
+"..KG......GK..",
+".KG........GK.",
+".KG........GK.",
+"KKK........KKK",
+"KgK........KgK",
+"KgK........KgK",
+"KKK........KKK"],
+poster: [
+"KKKKKKKKKKKKKK",
+"KRRRRRRRRRRRRK",
+"KRRRLLLRRRRRRK",
+"KRRLLRRRRRLRRK",
+"KRLLRRRRRRRRRK",
+"KRLLRRRRRLLLRK",
+"KRLLRRRRRRLRRK",
+"KRRLLRRRRRRRRK",
+"KRRRLLLRRRRRRK",
+"KRRRRRRRRRRRRK",
+"KKKKKKKKKKKKKK"],
+plant: [
+"..EE.EE..",
+".EEEEEEE.",
+".EeEEEeE.",
+"..EEEEE..",
+"...KEK...",
+"..KOOOK..",
+"..KOOOK..",
+"..KdOdK..",
+"..KOOOK..",
+"...KKK..."],
+creeper: [
+"EEEEEE",
+"KKEEKK",
+"KKEEKK",
+"EEKKEE",
+"EKKKKE",
+"EKKKKE",
+"EKEEKE"],
+sun: [
+".YYYY.",
+"YYYYYY",
+"YYYYYY",
+"YYYYYY",
+"YYYYYY",
+".YYYY."],
+cloud: [
+"...LLL....",
+".LLLLLLL..",
+"LLLLLLLLLL",
+".LLLLLLLL."],
+moon: [
+"..LLLL.",
+".LL....",
+"LLL....",
+"LLL....",
+"LLL....",
+".LL....",
+"..LLLL."],
+grass: [
+"KKKKKKKK",
+"KEEEEEEK",
+"KeEeEeEK",
+"KDdDdDdK",
+"KdDdDdDK",
+"KDdDdDdK",
+"KdDdDdDK",
+"KKKKKKKK"]
+};
+
+function R(x,y,w,h,c,extra){
+  return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+(c.charAt(0)==='#'||c.indexOf('var(')===0?c:'var(--c'+c+')')+'"'+(extra?' '+extra:'')+'/>';
+}
+function S(name,x,y,o){
+  o = o||{};
+  var rows = SPR[name], out='', w = rows[0].length;
+  for (var yy=0; yy<rows.length; yy++){
+    var r = rows[yy], xx=0;
+    while (xx<r.length){
+      var c = r.charAt(xx);
+      if (c==='.'){ xx++; continue; }
+      var x2 = xx; while (x2<r.length && r.charAt(x2)===c) x2++;
+      var px = o.flip ? (w - x2) : xx;
+      out += R(px,yy,x2-xx,1,c);
+      xx = x2;
+    }
+  }
+  return '<g transform="translate('+x+' '+y+')"'+(o.cls?' class="'+o.cls+'"':'')+(o.id?' id="'+o.id+'"':'')+'>'+out+'</g>';
+}
+function ring(x,y,w,h){ return '<rect class="ring" x="'+(x-1.5)+'" y="'+(y-1.5)+'" width="'+(w+3)+'" height="'+(h+3)+'"/>'; }
+function obj(id,label,hint,x,y,w,h,inner){
+  return '<g class="obj" id="o-'+id+'" tabindex="0" role="button" aria-label="'+label+'" data-hint="'+hint+'" data-act="'+id+'"><title>'+label+'</title>'+inner+ring(x,y,w,h)+'</g>';
+}
+
+function buildScene(){
+  var s = '';
+  s += '<defs>'
+    + '<pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse"><rect x="3" y="3" width="1" height="1" fill="var(--cw)"/></pattern>'
+    + '<radialGradient id="gl"><stop offset="0" stop-color="var(--cY)" stop-opacity=".9"/><stop offset="1" stop-color="var(--cY)" stop-opacity="0"/></radialGradient>'
+    + '<radialGradient id="sg"><stop offset="0" stop-color="var(--cB)" stop-opacity=".8"/><stop offset="1" stop-color="var(--cB)" stop-opacity="0"/></radialGradient>'
+    + '</defs>';
+  /* wall + floor */
+  s += R(0,0,192,80,'W') + '<rect x="0" y="0" width="192" height="76" fill="url(#dots)"/>';
+  s += R(0,76,192,2,'d') + R(0,78,192,2,'K');
+  s += R(0,80,192,28,'F');
+  for (var fy=85; fy<108; fy+=6){ s += R(0,fy,192,1,'f'); }
+  var seams=[[14,80],[52,80],[103,80],[150,80],[30,86],[80,86],[128,86],[176,86],[8,92],[60,92],[118,92],[166,92],[40,98],[96,98],[140,98],[22,104],[72,104],[130,104],[184,104]];
+  for (var i=0;i<seams.length;i++){ s += R(seams[i][0],seams[i][1],1,5,'f'); }
+  /* rug */
+  s += R(44,86,90,14,'R') + R(46,88,86,10,'L') + R(48,90,82,6,'R') + R(50,92,78,2,'L');
+  for (var rx=46; rx<132; rx+=4){ s += R(rx,86,2,1,'L') + R(rx+2,99,2,1,'L'); }
+
+  /* window (theme toggle) */
+  var win = R(72,6,36,29,'K') + R(73,7,34,27,'D') + R(75,9,30,23,'var(--sky)');
+  win += '<g class="day-only">' + S('sun',95,11) + S('cloud',76,13) + S('cloud',88,24) + R(75,27,30,5,'var(--hill)') + R(80,25,8,2,'var(--hill)') + R(94,26,7,1,'var(--hill)') + '</g>';
+  var stars=[[78,11],[84,14],[92,10],[99,16],[81,20],[101,22],[88,18],[96,13]];
+  var ns = S('moon',95,11) + R(75,27,30,5,'var(--hill)') + R(80,25,8,2,'var(--hill)') + R(94,26,7,1,'var(--hill)');
+  for (i=0;i<stars.length;i++){ ns += R(stars[i][0],stars[i][1],1,1,'L','class="star"'); }
+  win += '<g class="night-only">' + ns + '</g>';
+  win += R(89,9,2,23,'K') + R(75,20,30,1,'K') + R(70,35,40,2,'D') + R(70,37,40,1,'K');
+  s += obj('theme','Window: switch day and night','window → day / night',72,6,36,32,win);
+
+  /* poster */
+  s += S('poster',46,12);
+
+  /* bookshelf (stack) */
+  var sh = R(8,26,33,54,'K') + R(9,27,31,52,'D');
+  var ins=[28,42,56,70], hs=[12,12,12,8];
+  for (i=0;i<4;i++){ sh += R(10,ins[i],29,hs[i],'d'); }
+  var shelves = [
+    [['R',4,10],['B',3,9],['Y',4,11],['E',3,8],['P',4,10],['O',3,9],['b',4,11],['L',3,8]],
+    [['P',3,9],['O',4,10],['B',3,8],['R',4,11],['L',3,9],['E',4,10],['Y',3,8],['G',4,10]],
+    [['b',4,9],['R',3,10],['E',4,8],['Y',3,11]]
+  ];
+  for (i=0;i<shelves.length;i++){
+    var bx = 10, bottom = ins[i]+hs[i];
+    for (var j=0;j<shelves[i].length;j++){
+      var b = shelves[i][j];
+      sh += R(bx,bottom-b[2],b[1],b[2],'K') + R(bx+1,bottom-b[2]+1,b[1]-2,b[2]-2,b[0]) + R(bx+1,bottom-b[2]+3,b[1]-2,1,'K');
+      bx += b[1];
+    }
+  }
+  /* third shelf: grass block + leaning book */
+  sh += S('grass',26,60) + R(35,59,4,9,'K') + R(36,60,2,7,'P');
+  /* bottom: hardware boxes + cassettes */
+  sh += R(11,72,12,6,'K') + R(12,73,10,4,'g') + R(13,74,2,2,'E') + R(16,74,1,1,'R') + R(18,74,1,1,'R');
+  sh += R(26,75,10,3,'K') + R(27,76,8,1,'R') + R(26,72,10,3,'K') + R(27,73,8,1,'B');
+  sh += S('plant',10,16) + S('creeper',31,19);
+  s += obj('stack','Bookshelf: stack and skills','bookshelf → stack',8,16,33,64,sh);
+
+  /* lamp glow (night) */
+  s += '<ellipse class="glow" cx="128" cy="52" rx="34" ry="22" fill="url(#gl)"/>';
+  s += '<ellipse class="sglow" cx="99" cy="48" rx="20" ry="14" fill="url(#sg)"/>';
+
+  /* desk */
+  s += R(60,58,76,4,'K') + R(61,59,74,2,'D') + R(61,62,3,18,'K') + R(62,63,1,16,'d') + R(132,62,3,18,'K') + R(133,63,1,16,'d');
+
+  /* monitor (projects) */
+  var mon = S('monitor',86,38) + R(90,50,1,1,'Y','class="cursor"') + S('keyboard',89,55);
+  s += obj('projects','Monitor: projects','monitor → projects',86,38,26,20,mon);
+
+  /* cup (easter egg) */
+  var cup = S('cup',66,50) + R(68,47,1,1,'L','class="steam"') + R(70,46,1,1,'L','class="steam s2"');
+  s += obj('cup','Cup: tea or coffee','cup → ?',66,46,8,12,cup);
+
+  /* phone (launcher) */
+  s += obj('phone','Phone running Minecraft: the launcher story','phone → the launcher',112,42,11,16,S('phone',112,42));
+
+  /* lamp (decor) */
+  s += S('lamp',123,43) + '<g class="night-only">' + R(125,48,7,1,'Y') + '</g>';
+
+  /* side table + cassette + headphones (music) */
+  var mus = R(140,66,24,3,'K') + R(141,67,22,1,'D') + R(141,69,2,11,'K') + R(161,69,2,11,'K');
+  mus += R(151,40,1,3,'K') + S('phones',145,42);
+  mus += S('tape',142,55) + S('reelA',145,59,{cls:'reel-a'}) + S('reelB',145,59,{cls:'reel-b'});
+  s += obj('music','Cassette player and headphones: music','cassette → side B',140,40,24,26,mus);
+
+  /* door (contact) */
+  var door = R(168,34,21,46,'K') + R(169,35,19,44,'D')
+    + R(171,38,15,14,'K') + R(172,39,13,12,'d') + R(171,55,15,20,'K') + R(172,56,13,18,'d')
+    + R(171,52,3,2,'Y') + R(174,52,1,2,'K');
+  door += R(166,80,25,3,'K') + R(167,81,23,1,'E') ;
+  s += obj('contact','Door: contact','door → say hi',168,34,21,46,door);
+
+  /* me (about) */
+  var me = '<g class="bob"><g class="eyes-open">' + S('me',46,52) + '</g><g class="eyes-closed">' + S('me',46,52) + R(49,59,1,1,'S') + R(54,59,1,1,'S') + R(49,60,1,1,'K') + R(54,60,1,1,'K') + '</g></g>';
+  s += obj('about','Me: about','me → who is this',46,52,12,28,me);
+
+  /* cat (transient) */
+  s += '<g class="cat" id="cat" aria-hidden="true"><g class="frameA">' + S('catA',0,0,{flip:true}) + '</g><g class="frameB">' + S('catB',0,0,{flip:true}) + '</g></g>';
+
+  $('svg').innerHTML = s;
+  $('me-art').innerHTML = S('me',0,0);
+  $('phone-art').innerHTML = S('phone',0,0) + S('grass',14,4) + S('grass',24,4) + S('creeper',35,2);
+}
+buildScene();
+
+/* ---------- theme ---------- */
+var root = document.documentElement;
+function theme(){ return root.getAttribute('data-theme')==='night' ? 'night' : 'day'; }
+function setTheme(t){
+  root.setAttribute('data-theme', t);
+  try{ localStorage.setItem('md-theme', t); }catch(e){}
+  $('themeBtn').textContent = t==='night' ? 'day' : 'night';
+}
+setTheme(theme());
+$('themeBtn').addEventListener('click', function(){ setTheme(theme()==='night'?'day':'night'); });
+
+/* ---------- toast bubble in scene ---------- */
+var toastT;
+function toast(msg, sx, sy, ms){
+  var t = $('toast');
+  t.textContent = msg;
+  t.style.left = (sx/192*100)+'%';
+  t.style.top = (sy/108*100)+'%';
+  t.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ t.classList.remove('on'); }, ms||2200);
+}
+
+/* ---------- dialogs ---------- */
+var lastFocus = null;
+function openDlg(id){
+  var d = $(id);
+  if (!d || typeof d.showModal !== 'function') return;
+  lastFocus = document.activeElement;
+  d.showModal();
+  var f = d.querySelector('.bubble') || d.querySelector('.x');
+  if (f) f.focus();
+}
+var dls = document.querySelectorAll('dialog');
+for (var di=0; di<dls.length; di++){
+  (function(d){
+    d.addEventListener('click', function(e){ if (e.target === d) d.close(); });
+    d.addEventListener('close', function(){
+      if (d.id==='d-about') stopAbout();
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    });
+    var xs = d.querySelectorAll('[data-close]');
+    for (var k=0;k<xs.length;k++) xs[k].addEventListener('click', function(){ d.close(); });
+  })(dls[di]);
+}
+
+/* ---------- projects ---------- */
+var PROJECTS = [
+  {n:'JustRises Launcher', d:'Minimal Android Minecraft Java launcher written from scratch: bundled Java 25, LWJGL, custom JNI/EGL bridge, GLSL shim (noperspective→smooth) so server resource packs compile on mobile GPUs.', t:'Kotlin · C · JNI · Android', u:null, p:'private / in progress'},
+  {n:'MatrixCode', d:'Clean-room Rust terminal coding agent focused on minimal resource use, low latency, single binary, event-driven UI.', t:'Rust · TUI · AI', u:'https://github.com/matrixdurden/matrixcode'},
+  {n:'kien', d:'Deliberately small Linux terminal-session manager. No config file, no prefix key, no status bar. Just kien new, kien attach.', t:'Go · PTY · Linux', u:'https://github.com/matrixdurden/kien'},
+  {n:'ChatGPT Bridge', d:'Self-hosted Rust service letting a Custom GPT inspect repos, run commands, edit files and use Git on your dev machine.', t:'Rust · HTTP · Tooling', u:'https://github.com/matrixdurden/chatgpt-bridge'},
+  {n:'claude-server', d:'Portable single-screen TUI for managing always-on Claude Code Remote Control sessions on Linux.', t:'Shell · systemd · TUI', u:'https://github.com/matrixdurden/claude-server'},
+  {n:'opencode-kit', d:'Portable, manual OAuth account management for OpenCode.', t:'TypeScript · CLI', u:'https://github.com/matrixdurden/opencode-kit'},
+  {n:'PointOps', d:'Monitoring & agency cockpit for CWP hosting: uptime, domain/SSL/mail tracking, backup verification, WordPress scans, Telegram alerts, n8n automations, SSE live toasts.', t:'Next.js · Postgres · Drizzle', u:null, p:'private'},
+  {n:'PointQR', d:'Focused multi-tenant QR menu platform, 7 public themes, intentionally no ordering/payments/carts.', t:'Next.js 16 · React 19 · Tailwind 4 · Postgres', u:null, p:'private'}
+];
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+(function(){
+  var h = '';
+  for (var i=0;i<PROJECTS.length;i++){
+    var p = PROJECTS[i];
+    h += '<div class="card"><h3>'+esc(p.n)+'</h3><p>'+esc(p.d)+'</p><div class="tags">'+esc(p.t)+'</div>'
+      + (p.u ? '<div><a href="'+esc(p.u)+'" target="_blank" rel="noopener">github ↗</a></div>' : '<div class="priv">'+esc(p.p)+'</div>')
+      + '</div>';
+  }
+  $('cards').innerHTML = h;
+})();
+var ghLoaded = false;
+function loadRepos(){
+  if (ghLoaded) return; ghLoaded = true;
+  var el = $('gh-live');
+  var fail = function(){ el.innerHTML = '<p class="muted">GitHub is napping (or rate-limiting me). The list above is hand-picked anyway.</p>'; };
+  if (!window.fetch) return fail();
+  fetch('https://api.github.com/users/matrixdurden/repos?sort=updated&per_page=8', {headers:{'Accept':'application/vnd.github+json'}})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(data){
+      if (!Array.isArray(data)) throw new Error('shape');
+      var repos = data.filter(function(x){ return !x.fork; }).slice(0,8);
+      if (!repos.length) throw new Error('empty');
+      var h = '<ul>';
+      for (var i=0;i<repos.length;i++){
+        var r = repos[i];
+        h += '<li><a href="'+esc(r.html_url)+'" target="_blank" rel="noopener">'+esc(r.name)+'</a>'
+          + '<span class="s">'+esc(r.language||'')+(r.stargazers_count?' · ★ '+r.stargazers_count:'')+'</span>'
+          + (r.description ? '<span class="d">'+esc(r.description)+'</span>' : '')
+          + '</li>';
+      }
+      el.innerHTML = h + '</ul>';
+    })
+    .catch(fail);
+}
+
+/* ---------- about: typewriter ---------- */
+var ABOUT = [
+  "hey. I'm Matrix Durden. I write software. mostly small, sharp tools.",
+  "I started coding because I wanted things to work the way I wanted, not the way they were shipped.",
+  "my signature move: I rewrite the thing instead of configuring the thing. \"no config file\" is a compliment in my world.",
+  "terminals, Linux, Kotlin/JVM, Rust, Go. single binaries. frameworks stacked on frameworks make me tired.",
+  "lately I made Minecraft run on a phone that had no business running it. (the phone on the desk knows more.)",
+  "I also build AI-dev tooling for myself: a terminal coding agent in Rust, bridges, session managers. the boring glue nobody ships.",
+  "and sometimes I build tiny pages for people I care about. those aren't on GitHub.",
+  "anyway. click around. the cup is a trap."
+];
+var aPage = 0, aTimer = null, aDone = false;
+function setArrow(){ $('arrow').classList.toggle('on', aDone); $('pg').textContent = (aPage+1)+'/'+ABOUT.length; }
+function showPage(i){
+  var txt = $('about-text'), str = ABOUT[i];
+  clearInterval(aTimer); aDone = false; txt.textContent = '';
+  if (reduced){ txt.textContent = str; aDone = true; setArrow(); return; }
+  setArrow();
+  var j = 0;
+  aTimer = setInterval(function(){
+    j++; txt.textContent = str.slice(0,j);
+    if (j >= str.length){ clearInterval(aTimer); aDone = true; setArrow(); }
+  }, 24);
+}
+function startAbout(){ aPage = 0; showPage(0); }
+function stopAbout(){ clearInterval(aTimer); }
+function advance(){
+  if (!aDone){ clearInterval(aTimer); $('about-text').textContent = ABOUT[aPage]; aDone = true; setArrow(); return; }
+  if (aPage >= ABOUT.length-1){ $('d-about').close(); return; }
+  aPage++; showPage(aPage);
+}
+$('bubble').addEventListener('click', advance);
+$('bubble').addEventListener('keydown', function(e){ if (e.key==='Enter'||e.key===' '){ e.preventDefault(); advance(); } });
+
+/* ---------- cup ---------- */
+var cupN = 0;
+var CUP = ["tea or coffee? depends on the night.", "tonight: tea. the calm kind of build.", "...ok, coffee. the 'one more fix' kind.", "you can't refill a pixel cup.", "fine. refill #"];
+function cupClick(){
+  cupN++;
+  var m = cupN <= 4 ? CUP[cupN-1] : CUP[4] + (cupN-4) + '. the build isn\'t done.';
+  toast(m, 70, 44, 2600);
+}
+
+/* ---------- actions ---------- */
+function act(id){
+  switch(id){
+    case 'theme': setTheme(theme()==='night'?'day':'night'); toast(theme()==='night'?'lamp on. night build.':'morning. tea first.', 90, 42, 1600); break;
+    case 'projects': openDlg('d-projects'); loadRepos(); break;
+    case 'stack': openDlg('d-stack'); break;
+    case 'phone': openDlg('d-phone'); break;
+    case 'music': openDlg('d-music'); break;
+    case 'contact': openDlg('d-contact'); break;
+    case 'about': openDlg('d-about'); startAbout(); break;
+    case 'cup': cupClick(); break;
+  }
+}
+var hintEl = $('hint'), hintHTML = hintEl.innerHTML;
+var objs = document.querySelectorAll('.obj');
+for (var oi=0; oi<objs.length; oi++){
+  (function(o){
+    var id = o.getAttribute('data-act');
+    o.addEventListener('click', function(){ act(id); });
+    o.addEventListener('keydown', function(e){ if (e.key==='Enter'||e.key===' '){ e.preventDefault(); act(id); } });
+    var show = function(){ hintEl.innerHTML = '<b>'+esc(o.getAttribute('data-hint'))+'</b>'; };
+    var hide = function(){ hintEl.innerHTML = hintHTML; };
+    o.addEventListener('mouseenter', show); o.addEventListener('focus', show);
+    o.addEventListener('mouseleave', hide); o.addEventListener('blur', hide);
+  })(objs[oi]);
+}
+var music = $('o-music');
+music.addEventListener('mouseenter', function(){ music.classList.add('spin'); });
+music.addEventListener('focus', function(){ music.classList.add('spin'); });
+music.addEventListener('mouseleave', function(){ music.classList.remove('spin'); });
+music.addEventListener('blur', function(){ music.classList.remove('spin'); });
+
+/* ---------- idle: blink ---------- */
+var meEl = $('o-about');
+(function blinkLoop(){
+  if (reduced) return;
+  setTimeout(function(){
+    meEl.classList.add('blink');
+    setTimeout(function(){ meEl.classList.remove('blink'); blinkLoop(); }, 140);
+  }, 2600 + Math.random()*2600);
+})();
+
+/* ---------- cat ---------- */
+var cat = $('cat'), catX = -18, catTimer = null, catStep = 0, catPaused = 0;
+function catWalk(){
+  if (catTimer) return;
+  catX = -18; catStep = 0;
+  cat.classList.add('on'); cat.classList.add('walk');
+  catTimer = setInterval(function(){
+    if (catPaused > 0){ catPaused--; return; }
+    catX += 1; catStep++;
+    cat.setAttribute('transform', 'translate('+catX+' 70)');
+    if (catStep % 3 === 0) cat.classList.toggle('walk');
+    if (catX > 196){ clearInterval(catTimer); catTimer = null; cat.classList.remove('on'); scheduleCat(); }
+  }, 90);
+}
+function scheduleCat(){ setTimeout(catWalk, 25000 + Math.random()*35000); }
+cat.addEventListener('click', function(){ catPaused = 12; toast('mrrp.', catX+8, 68, 1200); });
+if (!reduced){ setTimeout(catWalk, 7000); }
+
+$('yr').textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

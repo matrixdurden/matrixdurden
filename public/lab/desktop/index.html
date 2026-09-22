@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matrix Durden</title>
+<meta name="description" content="Matrix Durden — software developer. Small sharp tools, single binaries, no config files. Boot the desktop to look around.">
+<meta property="og:title" content="Matrix Durden">
+<meta property="og:description" content="Software developer. Small sharp tools, single binaries, no config files. Boot the desktop to look around.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/307172898?v=4">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#26243a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%2326243a'/%3E%3Crect x='3' y='5' width='8' height='6' fill='%23f4eee2'/%3E%3Crect x='11' y='6' width='2' height='3' fill='%23f4eee2'/%3E%3Crect x='4' y='11' width='6' height='1' fill='%23f4eee2'/%3E%3Crect x='3' y='13' width='10' height='1' fill='%239ee7c1'/%3E%3Crect x='5' y='2' width='1' height='2' fill='%239ee7c1'/%3E%3Crect x='8' y='1' width='1' height='2' fill='%239ee7c1'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#26243a; --paper:#f4eee2; --paper2:#fffdf7; --ink:#2a2438; --ink2:#5a5470;
+  --title:#5c4b8c; --title2:#8f74bf; --grey:#8a84a2; --grey2:#aaa4bf;
+  --mint:#9ee7c1; --rose:#f0a0b0; --gold:#f4d06f; --sel:rgba(158,231,193,.45);
+  --hi:#ffffff; --lo:#b9b09c; --shadow:rgba(20,16,32,.55);
+  --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;
+  --pix:"Pixelify Sans",var(--mono);
+  --cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='19' viewBox='0 0 12 19' shape-rendering='crispEdges'%3E%3Cpath d='M1 1v14l3.5-3.5L7 17l2-1-2.5-5.5H11z' fill='%23fff' stroke='%232a2438' stroke-width='1.2'/%3E%3C/svg%3E") 1 1, auto;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--mono);overflow:hidden;cursor:var(--cursor);-webkit-text-size-adjust:100%}
+button,a,input{cursor:var(--cursor)}
+button{font-family:inherit}
+:focus-visible{outline:2px dashed var(--mint);outline-offset:2px}
+a{color:var(--title)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* desktop */
+#desktop{position:fixed;inset:0 0 38px 0;overflow:hidden;
+  background:var(--bg) radial-gradient(circle at 1px 1px,rgba(255,255,255,.09) 1px,transparent 1.6px) 0 0/16px 16px}
+[data-wall="2"] #desktop{background:var(--bg) linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/24px 24px,var(--bg) linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/24px 24px}
+[data-wall="3"] #desktop{background:repeating-linear-gradient(135deg,#26243a 0 10px,#2b2942 10px 20px)}
+[data-wall="4"] #desktop{background:#3b6a6a radial-gradient(circle at 1px 1px,rgba(255,255,255,.12) 1px,transparent 1.6px) 0 0/16px 16px}
+[data-wall="5"] #desktop{background:#4a3b5e}
+#icons{position:absolute;inset:0;pointer-events:none}
+.icon{pointer-events:auto;position:absolute;width:88px;padding:6px 2px;background:none;border:0;color:var(--paper);display:flex;flex-direction:column;align-items:center;gap:4px;user-select:none;touch-action:none}
+.icon svg{width:48px;height:48px;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.35))}
+.icon span{font:15px/1.15 var(--pix);text-align:center;text-shadow:1px 1px 0 var(--ink);padding:1px 3px;border:1px dotted transparent}
+.icon.sel span,.icon:focus-visible span{background:var(--title);border-color:var(--paper)}
+.icon.dragging{opacity:.75}
+#foot{position:absolute;right:12px;bottom:8px;color:rgba(255,255,255,.45);font:13px var(--pix);pointer-events:none;user-select:none}
+
+/* windows */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--ink);
+  box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--lo),4px 4px 0 var(--shadow);min-width:260px;min-height:140px;padding:3px}
+.win.max{left:0!important;top:0!important;width:100%!important;height:100%!important}
+.win[hidden]{display:none}
+.win:focus{outline:none}
+.tb{display:flex;align-items:center;gap:8px;padding:3px 4px 3px 6px;background:linear-gradient(90deg,var(--title),var(--title2));color:var(--paper);
+  font:16px/1 var(--pix);user-select:none;touch-action:none}
+.win:not(.active) .tb{background:linear-gradient(90deg,var(--grey),var(--grey2))}
+.tb svg{width:16px;height:16px;flex:none}
+.tb-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-btns{display:flex;gap:2px}
+.tb button{width:18px;height:18px;padding:0;border:1px solid var(--ink);background:var(--paper);color:var(--ink);
+  box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--lo);font:bold 12px/1 var(--mono);display:grid;place-items:center}
+.tb button:active{box-shadow:inset -1px -1px 0 var(--hi),inset 1px 1px 0 var(--lo)}
+.tb button svg{width:10px;height:10px}
+.mbar{display:flex;gap:2px;padding:2px 2px 1px;font:15px/1 var(--pix)}
+.mbar button{background:none;border:1px solid transparent;padding:3px 7px;color:var(--ink);font:inherit}
+.mbar button:hover{border-color:var(--ink);box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--lo)}
+.mbar button:active{box-shadow:inset -1px -1px 0 var(--hi),inset 1px 1px 0 var(--lo)}
+.body{flex:1;overflow:auto;padding:12px 14px;background:var(--paper2);border:1px solid var(--ink);margin:1px;
+  box-shadow:inset 1px 1px 0 var(--lo);overscroll-behavior:contain}
+.body.pad0{padding:0}
+.sbar{display:flex;gap:12px;padding:3px 6px 2px;font-size:12px;color:var(--ink2);border-top:1px solid var(--lo);margin-top:2px}
+.sbar span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbar span+span{flex:none}
+pre.txt{margin:0;white-space:pre-wrap;word-wrap:break-word;font:14px/1.6 var(--mono)}
+h2{font:22px/1.2 var(--pix);margin:0 0 8px}
+h3{font:17px/1.2 var(--pix);margin:14px 0 6px}
+p{margin:0 0 10px}
+.chip{display:inline-block;border:1px solid var(--ink);padding:0 6px;font:12px/1.6 var(--mono);background:var(--paper);margin:2px 3px 0 0;border-radius:2px}
+.b3{background:var(--paper);border:1px solid var(--ink);color:var(--ink);padding:4px 12px;font:15px/1.2 var(--pix);
+  box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--lo);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.b3:active,.b3.on{box-shadow:inset -1px -1px 0 var(--hi),inset 1px 1px 0 var(--lo);background:#ebe4d4}
+.b3[disabled]{color:#9b95aa;text-shadow:1px 1px 0 #fff}
+.b3 svg{width:16px;height:16px}
+.b3.big{padding:8px 16px;font-size:17px}
+.addr{display:flex;align-items:center;gap:8px;padding:4px 6px;font-size:13px}
+.addr .path{flex:1;background:var(--paper2);border:1px solid var(--ink);box-shadow:inset 1px 1px 0 var(--lo);padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:6px 10px;width:100%;text-align:left;background:none;border:1px solid transparent;color:inherit;font:inherit;line-height:1.3}
+.row:hover,.row.sel{background:var(--sel);border-color:var(--title)}
+.row svg{width:32px;height:32px;flex:none}
+.row b{font:16px/1.2 var(--pix);display:block}
+.row small{color:var(--ink2);font-size:12px}
+.row .st{margin-left:auto;font-size:11px;color:var(--ink2);white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;padding:10px}
+.fi{background:none;border:1px dotted transparent;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px;font:13px/1.2 var(--mono);text-align:center;word-break:break-word}
+.fi svg{width:40px;height:40px}
+.fi:hover,.fi.sel{background:var(--sel);border-color:var(--title)}
+.log{font:13px/1.6 var(--mono);white-space:pre-wrap;margin:0}
+.log .ok{color:#2e8b5e}.log .dim{color:var(--ink2)}
+.bar{height:14px;border:1px solid var(--ink);background:var(--paper);box-shadow:inset 1px 1px 0 var(--lo);padding:1px;margin:8px 0}
+.bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,var(--title) 0 8px,transparent 8px 10px);transition:width .3s}
+.note{background:#fff7c8;border:1px solid #d9b44a;padding:8px 10px;margin:10px 0}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:13px}
+.kv dt{color:var(--ink2)}.kv dd{margin:0}
+.repo{border:1px solid var(--lo);padding:8px 10px;margin-bottom:6px;background:var(--paper)}
+.repo a{font:16px/1.2 var(--pix);text-decoration:none}
+.repo a:hover{text-decoration:underline}
+.repo .meta{font-size:12px;color:var(--ink2);margin-top:4px}
+.lang{display:inline-block;width:9px;height:9px;border:1px solid var(--ink);background:var(--mint);margin-right:4px;vertical-align:-1px}
+.center{text-align:center}
+.avatar{width:64px;height:64px;border:1px solid var(--ink);box-shadow:3px 3px 0 var(--shadow);image-rendering:pixelated;float:right;margin:0 0 8px 12px}
+
+/* game */
+.game{display:flex;flex-direction:column;gap:10px;height:100%}
+.ghead{display:flex;gap:16px;font:15px var(--pix)}
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:180px}
+.hole{border:1px solid var(--ink);background:var(--paper);box-shadow:inset 1px 1px 0 var(--lo);font:13px/1.2 var(--mono);color:var(--ink);padding:4px;word-break:break-all;display:grid;place-items:center;min-height:56px}
+.hole.cfg{background:#ffe0e6;border-color:#c0475f}
+.hole.src{background:#dff5e8;border-color:#2e8b5e}
+.hole.hit{background:#e6e6e6;color:var(--ink2)}
+.gmsg{min-height:1.5em;margin:0;font-size:13px}
+
+/* taskbar */
+#taskbar{position:fixed;left:0;right:0;bottom:0;height:38px;background:var(--paper);border-top:1px solid var(--ink);box-shadow:inset 0 1px 0 var(--hi);
+  display:flex;align-items:center;gap:4px;padding:0 4px;z-index:8000}
+#start-btn{font-weight:700;padding:4px 10px 4px 6px}
+#start-btn svg{width:20px;height:20px}
+#tasks{flex:1;display:flex;gap:4px;overflow:hidden;min-width:0;padding:0 4px;border-left:1px solid var(--lo);border-right:1px solid var(--lo);height:30px;align-items:center}
+#tasks .b3{flex:0 1 160px;min-width:40px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;justify-content:flex-start;font-weight:400;display:block;padding:4px 8px}
+#tasks .b3 svg{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
+#tray{display:flex;align-items:center;gap:8px;padding:3px 8px;border:1px solid var(--lo);box-shadow:inset 1px 1px 0 var(--lo),inset -1px -1px 0 var(--hi);font:14px var(--pix);height:28px}
+#tray svg{width:16px;height:16px}
+#tray .tr{border:1px solid var(--ink);padding:0 4px;font-size:12px;line-height:1.3;background:#e8384f;color:#fff}
+#tray button{background:none;border:0;padding:0;display:grid;color:var(--ink)}
+
+/* menus */
+.menu{position:fixed;background:var(--paper);border:1px solid var(--ink);box-shadow:inset 1px 1px 0 var(--hi),3px 3px 0 var(--shadow);padding:3px;min-width:200px;z-index:9000;display:flex}
+.menu[hidden]{display:none}
+.menu ul{list-style:none;margin:0;padding:0;flex:1}
+.menu li button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:6px 10px;font:15px/1.2 var(--pix);color:var(--ink)}
+.menu li button svg{width:20px;height:20px}
+.menu li button:hover,.menu li button:focus-visible{background:var(--title);color:var(--paper);outline:none}
+.menu li.sep{height:1px;background:var(--lo);margin:3px 2px;border-bottom:1px solid var(--hi)}
+.menu li button small{margin-left:auto;font:11px var(--mono);opacity:.7}
+#start{bottom:40px;left:2px;min-width:230px}
+#start .band{width:26px;background:linear-gradient(0deg,var(--title),var(--title2));color:var(--paper);writing-mode:vertical-rl;transform:rotate(180deg);font:bold 18px var(--pix);padding:8px 3px;letter-spacing:1px;display:flex;align-items:center}
+#start .band b{color:var(--mint);font-weight:400}
+#ctx{min-width:190px}
+
+/* boot / off / screensaver */
+#boot{position:fixed;inset:0;background:#121020;color:#d9d3ea;font:14px/1.7 var(--mono);padding:28px 24px;z-index:10000;white-space:pre-wrap;overflow:hidden}
+#boot .h{color:var(--mint)}#boot .ok{color:var(--mint)}#boot .d{color:#8a84a2}
+#boot .skip{position:absolute;right:16px;bottom:12px;color:#8a84a2;font-size:12px}
+#boot.out{opacity:0;transition:opacity .35s}
+#boot[hidden]{display:none}
+#off{position:fixed;inset:0;background:#000;color:#f4a23c;display:grid;place-items:center;font:26px/1.4 var(--pix);text-align:center;z-index:10000;padding:16px}
+#off[hidden]{display:none}
+#off .b3{margin-top:18px;color:var(--ink)}
+#ss{position:fixed;inset:0;background:#0c0b14;z-index:9500;overflow:hidden}
+#ss[hidden]{display:none}
+#ss .logo{position:absolute;left:0;top:0;padding:10px 14px;border:2px solid var(--mint);color:var(--mint);font:bold 34px/1 var(--pix);white-space:nowrap;box-shadow:4px 4px 0 rgba(158,231,193,.25)}
+#ss .logo small{display:block;font-size:13px;font-weight:400;opacity:.7;margin-top:4px}
+.cur{display:inline-block;width:8px;height:14px;background:#d9d3ea;vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* mobile */
+@media (max-width:640px){
+  #icons{position:absolute;inset:0;padding:12px 16px 40px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px 4px;align-content:start;pointer-events:auto}
+  .icon{position:static!important;width:auto;touch-action:auto}
+  .win{left:8px!important;top:8px!important;width:calc(100% - 16px)!important;height:calc(100% - 16px)!important;min-width:0}
+  .win.max{left:8px!important;top:8px!important;width:calc(100% - 16px)!important;height:calc(100% - 16px)!important}
+  .tb button.mx{display:none}
+  #foot{display:none}
+  #start{left:8px;right:8px;min-width:0}
+  #tasks .b3{flex:0 1 110px}
+  #tray .clock{display:none}
+  .avatar{width:48px;height:48px}
+  #boot{padding:20px 16px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .cur{animation:none}
+  .bar i{transition:none}
+  #boot.out{transition:none}
+}
+</style>
+</head>
+<body data-wall="1">
+
+<div id="boot" aria-live="polite"><span class="h">MatrixBIOS v0.98 — (c) matrixdurden</span>
+<div id="bootlog"></div><span class="skip">click or press any key to skip</span></div>
+
+<div id="desktop">
+  <div id="icons" aria-label="Desktop"></div>
+  <div id="foot"></div>
+</div>
+
+<div id="ss" hidden><div class="logo">md<small>press anything to wake up</small></div></div>
+<div id="off" hidden><div>It's now safe to close this tab.<br><small style="font-size:16px;color:#a08050">(or don't. I don't mind.)</small><br><button class="b3" id="reboot">reboot</button></div></div>
+
+<nav id="start" class="menu" hidden aria-label="Start menu">
+  <div class="band">MatrixOS<b>98</b></div>
+  <ul id="start-list"></ul>
+</nav>
+<nav id="ctx" class="menu" hidden aria-label="Desktop context menu"><ul id="ctx-list"></ul></nav>
+
+<div id="taskbar">
+  <button class="b3" id="start-btn" aria-haspopup="true" aria-expanded="false"><span id="start-ico"></span>Start</button>
+  <div id="tasks" role="toolbar" aria-label="Open windows"></div>
+  <div id="tray">
+    <span class="tr" title="from Türkiye">TR</span>
+    <button title="sound: off. always. this site is silent." aria-label="Sound: off"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z" fill="#2a2438"/><path d="M11 6l3 4M14 6l-3 4" stroke="#e8384f" stroke-width="1.5"/></svg></button>
+    <button title="network: probably" aria-label="Network"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="9" width="6" height="5" fill="#2a2438"/><rect x="9" y="2" width="6" height="5" fill="#2a2438"/><rect x="2" y="10" width="4" height="3" fill="#9ee7c1"/><rect x="10" y="3" width="4" height="3" fill="#9ee7c1"/><rect x="7" y="7" width="3" height="1" fill="#2a2438"/><rect x="7" y="7" width="1" height="4" fill="#2a2438"/></svg></button>
+    <span class="clock" id="clock" aria-live="off">--:--</span>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile=()=>matchMedia('(max-width: 640px)').matches;
+const YEAR=new Date().getFullYear();
+const desk=$('#desktop');
+
+/* ---------- pixel icons ---------- */
+const PAL={k:'#2a2438',w:'#fff8ec',y:'#f4d06f',Y:'#d9b44a',b:'#7fb2f0',p:'#a58cf0',g:'#8fd8a8',G:'#5fb87f',r:'#f0a0b0',d:'#5a4f7a',o:'#a06a3f',n:'#7a4f2e',c:'#9ee7e0',e:'#b8b4c8',m:'#9ee7c1',x:'#e86b6b',s:'#6b6488'};
+function px(rows,swap){let out='';rows.forEach((row,y)=>{let x=0;while(x<row.length){let ch=row[x];if(ch==='.'){x++;continue}let x2=x;while(x2<row.length&&row[x2]===ch)x2++;const col=PAL[(swap&&swap[ch])||ch];out+=`<rect x="${x}" y="${y}" width="${x2-x}" height="1" fill="${col}"/>`;x=x2}});return `<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">${out}</svg>`}
+const R={
+note:['................','..kkkkkkkkk.....','..kwwwwwwwkk....','..kwwwwwwwkwk...','..kwwwwwwwkkkk..','..kwwwwwwwwwwk..','..kwddddddwwwk..','..kwwwwwwwwwwk..','..kwddddddddwk..','..kwwwwwwwwwwk..','..kwdddddddwwk..','..kwwwwwwwwwwk..','..kwdddddwwwwk..','..kwwwwwwwwwwk..','..kkkkkkkkkkkk..'],
+folder:['................','................','.kkkkkk.........','kyyyyyyk........','kyyyyyyykkkkkkkk','kYYYYYYYYYYYYYYk','kkkkkkkkkkkkkkkk','kYYYYYYYYYYYYYYk','kyyyyyyyyyyyyyyk','kyyyyyyyyyyyyyyk','kyyyyyyyyyyyyyyk','kyyyyyyyyyyyyyyk','kyyyyyyyyyyyyyyk','kkkkkkkkkkkkkkkk'],
+mail:['................','................','................','kkkkkkkkkkkkkkkk','kwwwwwwwwwwwwwwk','kwkwwwwwwwwwwkwk','kwwkwwwwwwwwkwwk','kwwwkwwwwwwkwwwk','kwwwwkwwwwkwwwwk','kwwwwwkwwkwwwwwk','kwwwwwwrrwwwwwwk','kwwwwwwrrwwwwwwk','kwwwwwwwwwwwwwwk','kkkkkkkkkkkkkkkk'],
+git:['................','...kkkk.........','..kppppk........','..kppppk........','...kkkk.........','....kk..........','....kk...kkkk...','....kk..kppppk..','....kkk.kppppk..','....kkkk.kkkk...','....kk.kk.kk....','....kk..kkk.....','....kk..........','...kkkk.........','..kppppk........','...kkkk.........'],
+bin:['................','................','.....kkkkkk.....','....kkeeeekk....','..kkkkkkkkkkkk..','..keeeeeeeeeek..','..kkkkkkkkkkkk..','...keeeeeeeek...','...kekeekeekk...','...kekeekeekk...','...kekeekeekk...','...kekeekeekk...','...kekeekeekk...','...keeeeeeeek...','...kkkkkkkkkk...'],
+binfull:['......kwwk......','.....kkwwkkk....','....kwkkkkwwk...','....kkeeeekkk...','..kkkkkkkkkkkk..','..keeeeeeeeeek..','..kkkkkkkkkkkk..','...keeeeeeeek...','...kekeekeekk...','...kekeekeekk...','...kekeekeekk...','...kekeekeekk...','...kekeekeekk...','...keeeeeeeek...','...kkkkkkkkkk...'],
+mc:['................','..kkkkkkkkkkkk..','..kggggggggggk..','..kgGgggggGggk..','..kggggGggggGk..','..kGggggggGggk..','..kgokoookoook..','..kooooooooook..','..konoonoonook..','..kooooooooook..','..konooonoonok..','..kooooooooook..','..koooonooooook.','..kkkkkkkkkkkk..'],
+mallet:['................','....kkkkkkkk....','...keeeeeeeek...','...kwwwwwwwwk...','...keeeeeeeek...','...kkkkkkkkkk...','......kook......','......kook......','......kook......','......kook......','......kook......','......kook......','......kook......','......kkkk......'],
+pc:['................','..kkkkkkkkkkkk..','..kwwwwwwwwwwk..','..kwddddddddwk..','..kwdmddddddwk..','..kwddmdddddwk..','..kwdmddddddwk..','..kwddddddddwk..','..kwwwwwwwwwwk..','..kkkkkkkkkkkk..','......kkkk......','....kkkkkkkk....','....keeeeeek....','....kkkkkkkk....'],
+cup:['................','....m.m.m.......','....m.m.m.......','................','..kkkkkkkkkk....','..kwwwwwwwwkkk..','..kwwwwwwwwk.k..','..kwwwwwwwwk.k..','..kwwwwwwwwkkk..','...kwwwwwwk.....','....kkkkkk......','..kkkkkkkkkk....'],
+heart:['................','................','..kkkk...kkkk...','.krrrrk.krrrrk..','krrwrrrkrrrrrrk.','krwrrrrrrrrrrrk.','krrrrrrrrrrrrrk.','krrrrrrrrrrrrrk.','.krrrrrrrrrrrk..','..krrrrrrrrrk...','...krrrrrrrk....','....krrrrrk.....','.....krrrk......','......krk.......','.......k........'],
+term:['................','................','.kkkkkkkkkkkkkk.','.kddddddddddddk.','.kdmddddddddddk.','.kddmdddddddddk.','.kdddmddddddddk.','.kddmdddddddddk.','.kdmddddddddddk.','.kddddddmmmmddk.','.kddddddddddddk.','.kkkkkkkkkkkkkk.'],
+moon:['................','......kkkk......','....kkyyyykk....','...kyyyykkkk....','..kyyyyk........','..kyyyk.........','.kyyyyk.........','.kyyyyk.........','.kyyyyk.........','..kyyyk.........','..kyyyyk........','...kyyyykkkk....','....kkyyyykk....','......kkkk......'],
+kb:['................','................','................','................','kkkkkkkkkkkkkkkk','kwwwwwwwwwwwwwwk','kwkwkwkwkwkwkwwk','kwwwwwwwwwwwwwwk','kwwkwkwkwkwkwwwk','kwwwwwwwwwwwwwwk','kwwwkkkkkkkkwwwk','kwwwwwwwwwwwwwwk','kkkkkkkkkkkkkkkk']
+};
+const I={};for(const k in R)I[k]=px(R[k]);
+I.zip=px(R.note,{d:'p'});I.yaml=px(R.note,{d:'Y'});I.sh=px(R.note,{d:'m'});I.ts=px(R.note,{d:'b'});I.html=px(R.note,{d:'r'});
+const glyph={min:'<svg viewBox="0 0 10 10" shape-rendering="crispEdges"><rect x="1" y="7" width="8" height="2" fill="#2a2438"/></svg>',max:'<svg viewBox="0 0 10 10" shape-rendering="crispEdges"><rect x="1" y="1" width="8" height="8" fill="none" stroke="#2a2438" stroke-width="1.6"/><rect x="1" y="1" width="8" height="2" fill="#2a2438"/></svg>',x:'<svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="#2a2438" stroke-width="1.7"/></svg>'};
+
+/* ---------- content ---------- */
+const PROJECTS=[
+{id:'justrises',name:'JustRises Launcher',icon:'mc',line:'Android Minecraft Java launcher, written from scratch.',desc:'A minimal Android Minecraft Java launcher I wrote from scratch: bundled Java 25 running on-device, LWJGL, a custom JNI/EGL bridge, and a GLSL shim that rewrites noperspective to smooth so server resource packs actually compile on mobile GPUs. I built it because one specific server pack refused to run on a phone. It runs now.',tags:['Kotlin','C','JNI','Android'],status:'private / in progress'},
+{id:'matrixcode',name:'MatrixCode',icon:'term',line:'Clean-room Rust terminal coding agent.',desc:'A clean-room terminal coding agent in Rust. Minimal resource use, low latency, single binary, event-driven UI. It is the tool I actually work inside, so every millisecond of lag annoys me personally, which is a great motivator.',tags:['Rust','TUI','AI'],url:'https://github.com/matrixdurden/matrixcode'},
+{id:'kien',name:'kien',icon:'term',line:'Deliberately small terminal-session manager.',desc:'A deliberately small Linux terminal-session manager. No config file, no prefix key, no status bar. Just kien new and kien attach. It does the one thing I wanted from the big ones and nothing else, which is the whole point.',tags:['Go','PTY','Linux'],url:'https://github.com/matrixdurden/kien'},
+{id:'bridge',name:'ChatGPT Bridge',icon:'git',line:'Let a Custom GPT touch your dev machine.',desc:'A self-hosted Rust service that lets a Custom GPT inspect repos, run commands, edit files and use Git on your dev machine. Small HTTP surface, single binary, runs where your code lives.',tags:['Rust','HTTP','Tooling'],url:'https://github.com/matrixdurden/chatgpt-bridge'},
+{id:'claude-server',name:'claude-server',icon:'pc',line:'Single-screen TUI for always-on Claude Code sessions.',desc:'A portable single-screen TUI for managing always-on Claude Code Remote Control sessions on Linux. Shell plus systemd, nothing to install besides the script itself.',tags:['Shell','systemd','TUI'],url:'https://github.com/matrixdurden/claude-server'},
+{id:'opencode-kit',name:'opencode-kit',icon:'ts',line:'Manual OAuth account management for OpenCode.',desc:'Portable, manual OAuth account management for OpenCode. Small CLI, does exactly what the name says.',tags:['TypeScript','CLI'],url:'https://github.com/matrixdurden/opencode-kit'},
+{id:'pointops',name:'PointOps',icon:'pc',line:'Monitoring & agency cockpit for CWP hosting.',desc:'Monitoring and agency cockpit for CWP hosting: uptime, domain/SSL/mail tracking, backup verification, WordPress scans, Telegram alerts, n8n automations and SSE live toasts. The one place to look before a client calls.',tags:['Next.js','Postgres','Drizzle'],status:'private'},
+{id:'pointqr',name:'PointQR',icon:'html',line:'Focused multi-tenant QR menu platform.',desc:'A focused multi-tenant QR menu platform with 7 public themes. Intentionally no ordering, no payments, no carts. A menu should be a menu.',tags:['Next.js 16','React 19','Tailwind 4','Postgres'],status:'private'}
+];
+const STACK=['Kotlin','Java','Rust','Go','TypeScript','C','Groovy','PostgreSQL','Redis','Linux','Docker','Git','Android','Next.js'];
+const HOBBIES=[
+{id:'mc',icon:'mc',name:'minecraft.lnk',title:'minecraft.lnk',text:'Minecraft, obviously. Mostly the part where I make it run where it should not run. A phone, for example. If a thing says "unsupported", I hear "not yet".'},
+{id:'lyrics',icon:'heart',name:'lyrics.html',title:'lyrics.html',text:'Music with lyrics that hit. Songs that say the thing you could not. Sometimes I build tiny pages with a song and synced lyrics for people I care about. It is a love language, and it compiles.'},
+{id:'term',icon:'kb',name:'terminal.txt',title:'terminal.txt',text:'Terminals, keyboards, tiling everything, dark themes. If the window manager has a mouse-shaped hole in its heart, good. I live in a grid of monospace text and I am happy there.'},
+{id:'rewrite',icon:'sh',name:'rewrite.sh',title:'rewrite.sh',text:'#!/bin/sh\n# usage: rewrite.sh <tool that annoys me>\n#\n# 1. try to configure it\n# 2. get annoyed\n# 3. delete the config\n# 4. write a smaller one that only does what I need\n# 5. ship a single binary\n\necho "no config file"'},
+{id:'night',icon:'moon',name:'night.log',title:'night.log',text:'[late] build started\n[late] tea or coffee? depends on the night\n[later] it compiled\n[later] it did not work\n[much later] it works\n[much later] it works and I know why\n[sunrise] good enough, commit'}
+];
+const README=`README.txt
+==========
+
+hi, I'm Matrix Durden. I write software.
+
+I started coding because I wanted things to work the way I wanted, not the way they were shipped. That never really went away. When a tool annoys me I don't configure it, I rewrite it. "no config file" is a compliment around here.
+
+I like small sharp tools: terminals, Linux, Kotlin on the JVM, Rust, Go. Things that ship as a single binary and don't need a framework stacked on a framework to say hello.
+
+Recently I wrote an entire Android Minecraft Java launcher from scratch (Java 25 on-device, LWJGL, a custom JNI bridge, a GLSL shim) just so one specific server pack would run on a phone. It does now.
+
+I also build AI dev tooling for myself: a terminal coding agent in Rust, a few bridges, a session manager, whatever the night needs.
+
+And sometimes I build tiny pages for people I care about.
+
+-- md (TR)`;
+
+/* ---------- window manager ---------- */
+const WM={wins:new Map(),z:10,cascade:0};
+const tasks=$('#tasks');
+let binEmpty=false;
+
+function createWindow(id,spec){
+  if(WM.wins.has(id)){const w=WM.wins.get(id);restoreWin(w);focusWin(w);return w}
+  const el=document.createElement('section');
+  el.className='win';el.setAttribute('role','dialog');el.setAttribute('aria-label',spec.title);el.tabIndex=-1;
+  el.innerHTML=`<header class="tb">${I[spec.icon]||I.note}<span class="tb-title">${esc(spec.title)}</span><div class="tb-btns"><button class="mn" aria-label="Minimize" title="Minimize">${glyph.min}</button><button class="mx" aria-label="Maximize" title="Maximize">${glyph.max}</button><button class="cl" aria-label="Close" title="Close">${glyph.x}</button></div></header>`+
+    (spec.menu?`<div class="mbar">${spec.menu.map(m=>`<button type="button">${esc(m)}</button>`).join('')}</div>`:'')+
+    `<div class="body${spec.pad0?' pad0':''}"></div>`+
+    (spec.status!==undefined?`<footer class="sbar"><span>${esc(spec.status)}</span><span class="sb2"></span></footer>`:'');
+  const w={id,el,spec,min:false,max:false,btn:null};
+  const vw=desk.clientWidth,vh=desk.clientHeight;
+  const W=Math.min(spec.w||520,vw-16),H=Math.min(spec.h||400,vh-16);
+  const k=WM.cascade++%7;
+  let x=Math.round((vw-W)/2+(k-3)*26),y=Math.round(Math.max(8,(vh-H)/2-40+k*22));
+  x=Math.max(8,Math.min(x,vw-W-8));y=Math.max(8,Math.min(y,vh-H-8));
+  Object.assign(el.style,{width:W+'px',height:H+'px',left:x+'px',top:y+'px'});
+  desk.appendChild(el);
+  $('.mn',el).addEventListener('click',()=>minimizeWin(w));
+  $('.mx',el).addEventListener('click',()=>toggleMax(w));
+  $('.cl',el).addEventListener('click',()=>closeWin(w));
+  el.addEventListener('pointerdown',()=>focusWin(w),true);
+  $$('.mbar button',el).forEach(b=>b.addEventListener('click',()=>setStatus(w,'that menu is decorative. like most menus.')));
+  makeDraggable(w);
+  const btn=document.createElement('button');btn.className='b3';btn.innerHTML=`${I[spec.icon]||I.note}${esc(spec.title)}`;btn.title=spec.title;
+  btn.addEventListener('click',()=>{if(w.min){restoreWin(w);focusWin(w)}else if(w.el.classList.contains('active'))minimizeWin(w);else focusWin(w)});
+  tasks.appendChild(btn);w.btn=btn;
+  WM.wins.set(id,w);
+  spec.render($('.body',el),w);
+  focusWin(w);
+  return w;
+}
+function setStatus(w,t){const s=$('.sbar span',w.el);if(s)s.textContent=t}
+function focusWin(w){
+  if(w.min)return;
+  WM.wins.forEach(o=>{o.el.classList.remove('active');o.btn.classList.remove('on')});
+  w.el.classList.add('active');w.btn.classList.add('on');w.el.style.zIndex=++WM.z;
+  if(!w.el.contains(document.activeElement))w.el.focus({preventScroll:true});
+}
+function minimizeWin(w){w.min=true;w.el.hidden=true;w.el.classList.remove('active');w.btn.classList.remove('on');const t=topWin();if(t)focusWin(t)}
+function restoreWin(w){w.min=false;w.el.hidden=false}
+function toggleMax(w){if(isMobile())return;w.max=!w.max;w.el.classList.toggle('max',w.max);$('.mx',w.el).title=w.max?'Restore':'Maximize'}
+function closeWin(w){if(w.spec.onClose)w.spec.onClose();w.el.remove();w.btn.remove();WM.wins.delete(w.id);const t=topWin();if(t)focusWin(t)}
+function topWin(){let best=null;WM.wins.forEach(w=>{if(!w.min&&(!best||+w.el.style.zIndex>+best.el.style.zIndex))best=w});return best}
+function makeDraggable(w){
+  const tb=$('.tb',w.el);
+  tb.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')||w.max||isMobile()||e.button!==0)return;
+    const r=w.el.getBoundingClientRect(),dr=desk.getBoundingClientRect();
+    const ox=e.clientX-r.left,oy=e.clientY-r.top;
+    tb.setPointerCapture(e.pointerId);w.el.classList.add('dragging');
+    const move=ev=>{let x=ev.clientX-dr.left-ox,y=ev.clientY-dr.top-oy;
+      x=Math.max(60-r.width,Math.min(x,dr.width-60));y=Math.max(0,Math.min(y,dr.height-32));
+      w.el.style.left=x+'px';w.el.style.top=y+'px'};
+    const up=()=>{tb.removeEventListener('pointermove',move);tb.removeEventListener('pointerup',up);tb.removeEventListener('pointercancel',up);w.el.classList.remove('dragging')};
+    tb.addEventListener('pointermove',move);tb.addEventListener('pointerup',up);tb.addEventListener('pointercancel',up);
+    e.preventDefault();
+  });
+  tb.addEventListener('dblclick',e=>{if(!e.target.closest('button'))toggleMax(w)});
+}
+
+/* ---------- apps ---------- */
+const APPS={
+about:{title:'readme.txt - Notepad',icon:'note',w:560,h:460,menu:['File','Edit','Search','Help'],status:'Ln 1, Col 1',render(b){
+  b.innerHTML=`<img class="avatar" src="https://avatars.githubusercontent.com/u/307172898?v=4" alt="matrixdurden avatar" width="64" height="64" loading="lazy"><pre class="txt">${esc(README)}</pre>`}},
+projects:{title:'Projects',icon:'folder',w:600,h:470,pad0:true,menu:['File','Edit','View','Help'],status:PROJECTS.length+' object(s)',render(b,w){
+  b.innerHTML=`<div class="addr"><span>Address</span><span class="path">C:\\matrixdurden\\projects</span></div><div class="rows">${PROJECTS.map(p=>`<button class="row" data-p="${p.id}">${I[p.icon]}<div><b>${esc(p.name)}</b><small>${esc(p.line)}</small></div><span class="st">${p.url?'public':esc(p.status)}</span></button>`).join('')}</div>`;
+  $$('.row',b).forEach(r=>{r.addEventListener('click',()=>{$$('.row',b).forEach(o=>o.classList.remove('sel'));r.classList.add('sel');openProject(r.dataset.p)});
+    r.addEventListener('focus',()=>{const p=PROJECTS.find(p=>p.id===r.dataset.p);setStatus(w,p.tags.join(' · '))})})}},
+hobbies:{title:'Hobbies',icon:'folder',w:520,h:340,pad0:true,menu:['File','Edit','View','Help'],status:HOBBIES.length+' object(s)',render(b){
+  b.innerHTML=`<div class="addr"><span>Address</span><span class="path">C:\\matrixdurden\\hobbies</span></div><div class="grid">${HOBBIES.map(h=>`<button class="fi" data-h="${h.id}">${I[h.icon]}<span>${esc(h.name)}</span></button>`).join('')}</div>`;
+  $$('.fi',b).forEach(f=>f.addEventListener('click',()=>{const h=HOBBIES.find(h=>h.id===f.dataset.h);
+    createWindow('hobby-'+h.id,{title:h.title+' - Notepad',icon:h.icon,w:440,h:300,menu:['File','Edit'],status:'',render(bb){bb.innerHTML=`<pre class="txt">${esc(h.text)}</pre>`}})}))}},
+contact:{title:'Dial-Up Networking',icon:'mail',w:440,h:340,render(b,w){
+  b.innerHTML=`<h2>Connect to matrixdurden</h2><pre class="log" id="dial"></pre><div class="bar"><i></i></div><div id="dial-out" hidden><p>Connected. No email address here, on purpose. These two work fine:</p><p><a class="b3 big" href="https://github.com/matrixdurden" target="_blank" rel="noopener">${I.git} GitHub ↗</a> <a class="b3 big" href="https://instagram.com/matrixdurden" target="_blank" rel="noopener">${I.heart} Instagram ↗</a></p><p><small>Say hi. I read things, I just don't do inboxes.</small></p></div>`;
+  const log=$('#dial',b),bar=$('.bar i',b),out=$('#dial-out',b);
+  const steps=[['Dialing...',0],['Verifying username and password...',30],['no password needed. it\'s just you.',50],['Negotiating with the modem...',75],['Connected at 56.0 kbps',100]];
+  const timers=[];let i=0;
+  const step=()=>{if(i>=steps.length){out.hidden=false;return}const [t,pc]=steps[i++];log.innerHTML+=(i>1?'\n':'')+esc(t);bar.style.width=pc+'%';timers.push(setTimeout(step,reduced?0:380))};
+  step();w.spec.onClose=()=>timers.forEach(clearTimeout)}},
+github:{title:'GitHub - live',icon:'git',w:560,h:460,status:'fetching...',render(b,w){
+  b.innerHTML=`<p class="center"><span class="cur"></span> asking api.github.com...</p>`;
+  const fallback=msg=>{setStatus(w,'offline mode');b.innerHTML=`<div class="note">${esc(msg)} Here's what I remember:</div>`+PROJECTS.filter(p=>p.url).map(p=>`<div class="repo"><a href="${p.url}" target="_blank" rel="noopener">${esc(p.name)}</a><div>${esc(p.line)}</div><div class="meta">${p.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div></div>`).join('')+`<p class="center"><a class="b3" href="https://github.com/matrixdurden" target="_blank" rel="noopener">open github.com/matrixdurden ↗</a></p>`};
+  fetch('https://api.github.com/users/matrixdurden/repos?sort=updated&per_page=8').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(list=>{
+    const repos=(Array.isArray(list)?list:[]).filter(r=>!r.fork);
+    if(!repos.length)throw new Error('empty');
+    setStatus(w,repos.length+' public repo(s), sorted by last push');
+    b.innerHTML=repos.map(r=>`<div class="repo"><a href="${esc(r.html_url)}" target="_blank" rel="noopener">${esc(r.name)}</a><div>${esc(r.description||'(no description, the code is the description)')}</div><div class="meta">${r.language?`<span class="lang"></span>${esc(r.language)} · `:''}★ ${r.stargazers_count} · updated ${esc(String(r.pushed_at||r.updated_at||'').slice(0,10))}</div></div>`).join('')+`<p class="center"><a class="b3" href="https://github.com/matrixdurden" target="_blank" rel="noopener">all repos ↗</a></p>`;
+  }).catch(()=>fallback('Couldn\'t reach GitHub right now (rate limit or offline).'))}},
+bin:{title:'Recycle Bin',icon:'binfull',w:520,h:360,pad0:true,menu:['File','Edit','View'],status:'2 object(s)',render(b,w){
+  const items=[{n:'frameworks.zip',i:'zip',info:'Size: 412 MB\nContains: 14 layers of abstraction, 3 build steps, 1 hello world.\nDeleted because: I could see the code without it.'},{n:'config.yaml',i:'yaml',info:'Size: 0 bytes\nContains: nothing. It never needed to exist.\nDeleted because: the defaults are the config.'}];
+  const draw=()=>{b.innerHTML=binEmpty?`<div class="grid" style="place-items:center;min-height:180px"><p class="center" style="grid-column:1/-1">Empty.<br><small>Feels lighter already.</small></p></div>`:
+    `<div class="grid">${items.map(it=>`<button class="fi" data-i="${it.n}">${I[it.i]}<span>${esc(it.n)}</span></button>`).join('')}</div><div style="padding:0 10px 10px;display:flex;gap:8px;flex-wrap:wrap"><button class="b3" id="restore" disabled title="no.">Restore</button><button class="b3" id="empty">Empty Recycle Bin</button></div><pre class="log" id="bininfo" style="padding:0 12px 12px"></pre>`;
+    setStatus(w,binEmpty?'0 object(s)':'2 object(s)');
+    if(binEmpty)return;
+    $$('.fi',b).forEach(f=>f.addEventListener('click',()=>{$$('.fi',b).forEach(o=>o.classList.remove('sel'));f.classList.add('sel');const it=items.find(x=>x.n===f.dataset.i);$('#bininfo',b).textContent=it.info}));
+    $('#empty',b).addEventListener('click',()=>{const e=$('#empty',b);if(e.dataset.sure){emptyBin();draw()}else{e.dataset.sure='1';e.textContent='Are you sure? (yes, obviously)'}})};
+  draw();w.spec.redraw=draw}},
+mc:{title:'JustRises Launcher',icon:'mc',w:560,h:450,status:'Java 25 · LWJGL · arm64',render(b,w){
+  b.innerHTML=`<div style="display:flex;gap:14px;align-items:center;margin-bottom:10px"><span style="width:56px;height:56px;flex:none">${I.mc}</span><div><h2 style="margin:0">JustRises Launcher</h2><small>Minecraft Java on Android. From scratch. For one server pack.</small></div></div><pre class="log" id="mclog"></pre><div id="mcstory" hidden><h3>the story</h3><p>There was a server. It had a resource pack. The pack used a GLSL keyword that mobile GPUs simply refuse to compile, and every existing launcher shrugged. So I stopped configuring launchers and wrote one: Java 25 running on-device, LWJGL with a custom JNI/EGL bridge, and a tiny GLSL shim that rewrites <code>noperspective</code> to <code>smooth</code> at load time so the shaders compile.</p><p>It is private and still in progress, but the game runs on the phone now, which is the only benchmark I cared about.</p><p><span class="chip">Kotlin</span><span class="chip">C</span><span class="chip">JNI</span><span class="chip">Android</span><span class="chip">GLSL</span></p><p><button class="b3" id="play">Play</button> <span id="playmsg"></span></p></div>`;
+  const lines=['> extracting bundled Java 25 .......... ok','> loading LWJGL natives (arm64) ....... ok','> JNI bridge: EGL context ............. ok','> GLSL shim: noperspective -> smooth .. patched','> checking for config files ........... none (good)','> launching game ...................... on the phone, not here'];
+  const log=$('#mclog',b);let i=0;const t=[];
+  const step=()=>{if(i>=lines.length){$('#mcstory',b).hidden=false;$('#play',b).addEventListener('click',()=>{$('#playmsg',b).textContent='this is a browser. nice try though.'});return}log.innerHTML+=(i?'\n':'')+esc(lines[i++]);t.push(setTimeout(step,reduced?0:260))};step();
+  w.spec.onClose=()=>t.forEach(clearTimeout)}},
+game:{title:'Whack-a-Config',icon:'mallet',w:420,h:440,status:'delete config files. leave the source alone.',render(b,w){
+  let best=0;try{best=+localStorage.getItem('md-wac')||0}catch(e){}
+  b.innerHTML=`<div class="game"><div class="ghead"><span>score <b id="gs">0</b></span><span>time <b id="gt">30</b></span><span>best <b id="gb">${best}</b></span></div><div class="ggrid">${'<button class="hole" aria-label="empty"></button>'.repeat(9)}</div><p class="gmsg" id="gm">config files keep appearing. click them to delete. don't touch the source.</p><div><button class="b3" id="gstart">start</button></div></div>`;
+  const CFG=['webpack.config.js','.eslintrc.json','tsconfig.json','babel.config.js','.prettierrc','jest.config.ts','vite.config.ts','.babelrc','config.yaml','settings.ini'],SRC=['main.rs','main.go','Main.kt','shim.c','kien.go'];
+  const holes=$$('.hole',b),gs=$('#gs',b),gt=$('#gt',b),gm=$('#gm',b),st=$('#gstart',b);
+  let score=0,time=30,run=false,tick=null,spawn=null;
+  const clear=h=>{h.className='hole';h.textContent='';h.setAttribute('aria-label','empty');delete h.dataset.k};
+  const pop=()=>{const free=holes.filter(h=>!h.dataset.k);if(!free.length)return;const h=free[Math.random()*free.length|0];const src=Math.random()<.25;h.dataset.k=src?'src':'cfg';h.textContent=src?SRC[Math.random()*SRC.length|0]:CFG[Math.random()*CFG.length|0];h.className='hole '+h.dataset.k;h.setAttribute('aria-label',h.textContent);setTimeout(()=>{if(h.dataset.k&&h.className!=='hole hit')clear(h)},reduced?1400:950)};
+  holes.forEach(h=>h.addEventListener('click',()=>{if(!run||!h.dataset.k||h.classList.contains('hit'))return;if(h.dataset.k==='cfg'){score++;gm.textContent='deleted '+h.textContent+'. cleaner already.';h.className='hole hit';h.textContent='deleted'}else{score=Math.max(0,score-2);gm.textContent='hey, that was '+h.textContent+'. leave it.';h.className='hole hit';h.textContent='oops'}gs.textContent=score;setTimeout(()=>clear(h),400)}));
+  const end=()=>{run=false;clearInterval(tick);clearInterval(spawn);holes.forEach(clear);st.disabled=false;st.textContent='again';if(score>best){best=score;gb.textContent=best;try{localStorage.setItem('md-wac',best)}catch(e){}gm.textContent='new best: '+score+'. no config files survived.'}else gm.textContent='time. final score: '+score+'.'};
+  const gb=$('#gb',b);
+  st.addEventListener('click',()=>{score=0;time=30;gs.textContent=0;gt.textContent=30;run=true;st.disabled=true;gm.textContent='go.';spawn=setInterval(pop,reduced?900:650);pop();tick=setInterval(()=>{time--;gt.textContent=time;if(time<=0)end()},1000)});
+  w.spec.onClose=()=>{clearInterval(tick);clearInterval(spawn)}}},
+sys:{title:'System Properties',icon:'pc',w:500,h:420,status:'matrixdurden — built by hand, no frameworks · '+YEAR,render(b){
+  b.innerHTML=`<h2>MatrixOS 98</h2><dl class="kv"><dt>User</dt><dd>matrixdurden <span class="chip">TR</span></dd><dt>Role</dt><dd>software developer</dd><dt>Processor</dt><dd>tea or coffee, depends on the night</dd><dt>Config files</dt><dd>0 (and proud)</dd><dt>Frameworks</dt><dd>see Recycle Bin</dd><dt>Ships as</dt><dd>single binary, ideally</dd></dl><h3>Installed drivers</h3><p>${STACK.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</p><h3>Build notes</h3><p>This whole desktop is one HTML file with inline CSS and vanilla JS. No framework, no build step, no config. It felt rude to do it any other way.</p><p><small>matrixdurden — built by hand, no frameworks · ${YEAR}</small></p>`}}
+};
+function openApp(id){const a=APPS[id];if(!a)return;const spec=Object.assign({},a);createWindow(id,spec)}
+function openProject(id){const p=PROJECTS.find(p=>p.id===id);if(!p)return;
+  createWindow('proj-'+p.id,{title:p.name+' - Properties',icon:p.icon,w:480,h:380,status:p.url?'public':p.status,render(b){
+    b.innerHTML=`<div style="display:flex;gap:14px;align-items:center;margin-bottom:10px"><span style="width:48px;height:48px;flex:none">${I[p.icon]}</span><div><h2 style="margin:0">${esc(p.name)}</h2><small>${esc(p.line)}</small></div></div><p>${esc(p.desc)}</p><p>${p.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</p><p>${p.url?`<a class="b3" href="${p.url}" target="_blank" rel="noopener">${I.git} open on GitHub ↗</a>`:`<span class="b3" style="color:#9b95aa">${esc(p.status)}</span>`}</p>`}})}
+function emptyBin(){binEmpty=true;const ic=$('.icon[data-app="bin"]');if(ic){$('svg',ic).outerHTML=I.bin}const w=WM.wins.get('bin');if(w){$('.tb svg',w.el).outerHTML=I.bin;w.btn.querySelector('svg').outerHTML=I.bin}}
+
+/* ---------- desktop icons ---------- */
+const ICONS=[['about','About Me','note'],['projects','Projects','folder'],['hobbies','Hobbies','folder'],['contact','Contact','mail'],['github','GitHub','git'],['mc','Minecraft.exe','mc'],['game','Whack-a-Config','mallet'],['sys','System','pc'],['bin','Recycle Bin','binfull']];
+const iconsEl=$('#icons');
+ICONS.forEach(([app,label,ic])=>{const b=document.createElement('button');b.className='icon';b.dataset.app=app;b.innerHTML=`${I[ic]}<span>${esc(label)}</span>`;b.setAttribute('aria-label',label);iconsEl.appendChild(b);
+  let drag=null,moved=false;
+  b.addEventListener('pointerdown',e=>{if(isMobile()||e.button!==0)return;const r=b.getBoundingClientRect(),dr=desk.getBoundingClientRect();drag={ox:e.clientX-r.left,oy:e.clientY-r.top,sx:e.clientX,sy:e.clientY,dr};moved=false;b.setPointerCapture(e.pointerId)});
+  b.addEventListener('pointermove',e=>{if(!drag)return;if(!moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<5)return;moved=true;b.classList.add('dragging');
+    let x=e.clientX-drag.dr.left-drag.ox,y=e.clientY-drag.dr.top-drag.oy;x=Math.max(0,Math.min(x,drag.dr.width-b.offsetWidth));y=Math.max(0,Math.min(y,drag.dr.height-b.offsetHeight));b.style.left=x+'px';b.style.top=y+'px';b.dataset.moved='1'});
+  const stop=()=>{drag=null;b.classList.remove('dragging')};
+  b.addEventListener('pointerup',stop);b.addEventListener('pointercancel',stop);
+  b.addEventListener('click',()=>{if(moved){moved=false;return}selectIcon(b);openApp(app)});
+  b.addEventListener('focus',()=>selectIcon(b));
+});
+function selectIcon(b){$$('.icon').forEach(o=>o.classList.remove('sel'));if(b)b.classList.add('sel')}
+function layoutIcons(force){if(isMobile())return;const h=desk.clientHeight-20,step=96,per=Math.max(1,Math.floor(h/step));$$('.icon').forEach((b,i)=>{if(b.dataset.moved&&!force)return;if(force)delete b.dataset.moved;b.style.left=(12+Math.floor(i/per)*96)+'px';b.style.top=(10+(i%per)*step)+'px'})}
+layoutIcons();
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>layoutIcons(false),120)});
+desk.addEventListener('pointerdown',e=>{if(e.target===desk||e.target===iconsEl)selectIcon(null)});
+$('#foot').textContent='matrixdurden — built by hand, no frameworks · '+YEAR;
+
+/* ---------- start menu ---------- */
+const start=$('#start'),startBtn=$('#start-btn');$('#start-ico').innerHTML=I.cup;
+const SM=[['about','About Me','note'],['projects','Projects','folder'],['hobbies','Hobbies','folder'],['github','GitHub','git'],['contact','Contact','mail'],'-',['mc','Minecraft.exe','mc'],['game','Whack-a-Config','mallet'],'-',['sys','System Properties','pc'],['bin','Recycle Bin','binfull'],'-',['off','Shut Down...','moon']];
+$('#start-list').innerHTML=SM.map(m=>m==='-'?'<li class="sep"></li>':`<li><button data-app="${m[0]}">${I[m[2]]}${esc(m[1])}</button></li>`).join('');
+function toggleStart(open){const o=open===undefined?start.hidden:open;start.hidden=!o;startBtn.classList.toggle('on',o);startBtn.setAttribute('aria-expanded',o);if(o){closeCtx();$('#start-list button').focus()}}
+startBtn.addEventListener('click',()=>toggleStart());
+$('#start-list').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;toggleStart(false);if(b.dataset.app==='off')shutdown();else openApp(b.dataset.app)});
+
+/* ---------- context menu ---------- */
+const ctx=$('#ctx');
+const CTX=[['open-about','Open readme.txt','note'],['arrange','Arrange Icons','folder'],['wall','Change Wallpaper','heart'],['empty','Empty Recycle Bin','bin'],'-',['sys','About This Computer','pc']];
+$('#ctx-list').innerHTML=CTX.map(m=>m==='-'?'<li class="sep"></li>':`<li><button data-act="${m[0]}">${I[m[2]]}${esc(m[1])}</button></li>`).join('');
+function closeCtx(){ctx.hidden=true}
+desk.addEventListener('contextmenu',e=>{if(e.target.closest('.win'))return;e.preventDefault();toggleStart(false);ctx.hidden=false;
+  const mw=ctx.offsetWidth,mh=ctx.offsetHeight;ctx.style.left=Math.min(e.clientX,innerWidth-mw-4)+'px';ctx.style.top=Math.min(e.clientY,innerHeight-mh-42)+'px';$('#ctx-list button').focus()});
+$('#ctx-list').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;closeCtx();const a=b.dataset.act;
+  if(a==='open-about')openApp('about');else if(a==='arrange')layoutIcons(true);else if(a==='wall'){document.body.dataset.wall=(+document.body.dataset.wall%5)+1}
+  else if(a==='empty'){emptyBin();const w=WM.wins.get('bin');if(w&&w.spec.redraw)w.spec.redraw()}else if(a==='sys')openApp('sys')});
+document.addEventListener('pointerdown',e=>{if(!ctx.hidden&&!e.target.closest('#ctx'))closeCtx();if(!start.hidden&&!e.target.closest('#start')&&!e.target.closest('#start-btn'))toggleStart(false)});
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(!ctx.hidden)return closeCtx();if(!start.hidden)return toggleStart(false);const t=topWin();if(t)closeWin(t)}
+});
+
+/* ---------- clock ---------- */
+const clock=$('#clock');const tickClock=()=>{clock.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};tickClock();setInterval(tickClock,10000);
+
+/* ---------- shutdown ---------- */
+const off=$('#off');
+function shutdown(){off.hidden=false;$('#reboot').focus()}
+$('#reboot').addEventListener('click',()=>{off.hidden=true;boot()});
+
+/* ---------- screensaver ---------- */
+const ss=$('#ss'),logo=$('.logo',ss);let idleT=null,raf=null,ssOn=false,booted=false;
+const COLS=['#9ee7c1','#f0a0b0','#f4d06f','#a58cf0','#9ee7e0'];
+function startSS(){if(ssOn||!booted)return;ssOn=true;ss.hidden=false;
+  let x=innerWidth/2-100,y=innerHeight/2-40,dx=2.2,dy=1.7,ci=0;
+  const place=()=>{logo.style.transform=`translate(${x}px,${y}px)`};
+  if(reduced){x=innerWidth/2-logo.offsetWidth/2;y=innerHeight/2-logo.offsetHeight/2;place();return}
+  const loop=()=>{const w=logo.offsetWidth,h=logo.offsetHeight;x+=dx;y+=dy;let hit=false;
+    if(x<=0||x+w>=innerWidth){dx=-dx;x=Math.max(0,Math.min(x,innerWidth-w));hit=true}if(y<=0||y+h>=innerHeight){dy=-dy;y=Math.max(0,Math.min(y,innerHeight-h));hit=true}
+    if(hit){ci=(ci+1)%COLS.length;logo.style.color=logo.style.borderColor=COLS[ci]}place();raf=requestAnimationFrame(loop)};loop()}
+function stopSS(){if(!ssOn)return;ssOn=false;ss.hidden=true;cancelAnimationFrame(raf)}
+function poke(){stopSS();clearTimeout(idleT);idleT=setTimeout(startSS,60000)}
+['pointermove','pointerdown','keydown','touchstart','wheel'].forEach(ev=>document.addEventListener(ev,poke,{passive:true}));
+
+/* ---------- boot ---------- */
+const bootEl=$('#boot'),bootLog=$('#bootlog');
+const BOOT=[['Memory test: 640K',' ... enough for anyone'],['Detecting coffee ......................',' OK'],['Detecting tea .........................',' also OK'],['Checking for config files .............',' none found (good)'],['Loading frameworks ....................',' skipped'],['Mounting /home/matrixdurden ...........',' OK'],['Starting MatrixOS 98 ..................',' ']];
+let bootTimers=[],bootDone=false;
+function boot(){
+  bootDone=false;booted=false;bootEl.hidden=false;bootEl.classList.remove('out');bootLog.innerHTML='';
+  WM.wins.forEach(closeWin);
+  let i=0;const step=()=>{if(i>=BOOT.length){bootLog.innerHTML+='<span class="cur"></span>';bootTimers.push(setTimeout(finish,reduced?0:320));return}
+    const [a,b]=BOOT[i++];bootLog.innerHTML+=`<div>${esc(a)}<span class="ok">${esc(b)}</span></div>`;bootTimers.push(setTimeout(step,reduced?0:170))};
+  step();
+  const skip=e=>{if(bootDone)return;if(e.type==='keydown'&&(e.key==='Meta'||e.key==='Control'||e.key==='Alt'||e.key==='Shift'))return;finish()};
+  bootEl.addEventListener('click',skip);document.addEventListener('keydown',skip,{once:false});
+  function finish(){if(bootDone)return;bootDone=true;bootTimers.forEach(clearTimeout);bootTimers=[];document.removeEventListener('keydown',skip);bootEl.removeEventListener('click',skip);
+    bootEl.classList.add('out');setTimeout(()=>{bootEl.hidden=true;booted=true;poke();openApp('about')},reduced?0:360)}
+}
+boot();
+})();
+</script>
+</body>
+</html>

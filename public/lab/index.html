@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab — pick a vibe</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg:#0b0b0f; --fg:#eaeaf0; --muted:#8a8a99; --line:#23232e; --accent:#ffd166; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .wrap { width:min(960px, calc(100% - 32px)); margin:0 auto; padding:48px 0 80px; }
+  h1 { font-size:clamp(28px,6vw,48px); margin:0 0 8px; letter-spacing:-1px; }
+  p.sub { color:var(--muted); margin:0 0 36px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  a.card { display:block; padding:22px; border:1px solid var(--line); border-radius:14px; color:inherit; text-decoration:none; background:#101018; transition:150ms; }
+  a.card:hover { border-color:var(--accent); transform:translateY(-3px); }
+  .card .n { font-size:11px; color:var(--muted); }
+  .card h2 { margin:6px 0 8px; font-size:18px; }
+  .card p { margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+  .card .go { display:inline-block; margin-top:14px; color:var(--accent); font-size:13px; }
+  footer { margin-top:40px; color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>lab / pick a vibe</h1>
+  <p class="sub">four prototypes of the same person. click around, break things, choose one.</p>
+  <div class="grid">
+    <a class="card" href="./desktop/"><span class="n">01</span><h2>Retro Desktop OS</h2><p>Boot screen, draggable windows, taskbar, recycle bin full of config files.</p><span class="go">open →</span></a>
+    <a class="card" href="./pixel/"><span class="n">02</span><h2>Tiny Pixel World</h2><p>A cozy pixel room. Click the monitor, the phone, the cup, the cat.</p><span class="go">open →</span></a>
+    <a class="card" href="./playful/"><span class="n">03</span><h2>Playful &amp; Colorful</h2><p>Stickers you can throw, bento cards, confetti if you know the code.</p><span class="go">open →</span></a>
+    <a class="card" href="./terminal/"><span class="n">04</span><h2>Cute Terminal</h2><p>A real shell. Type <code>help</code>. Try <code>tea</code>. Don't try <code>rm -rf</code>. Or do.</p><span class="go">open →</span></a>
+  </div>
+  <footer>current live page: <a href="../" style="color:var(--accent)">/</a></footer>
+</div>
+</body>
+</html>

@@ -178,32 +178,6 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .bubble .colon{animation:blink 1s steps(1) infinite}
 .me:hover .bubble,.me:focus-visible .bubble,.me.peek .bubble{opacity:1;transform:translate(-50%,0)}
 @keyframes blink{50%{opacity:.2}}
-.avatar.got{animation:got 1s ease}
-@keyframes got{0%{box-shadow:0 0 0 0 rgba(30,215,96,.9)}100%{box-shadow:0 0 0 22px rgba(30,215,96,0)}}
-
-/* ---------- sent message: characters scramble, then fly up to the avatar ---------- */
-.fly{position:fixed;z-index:30;pointer-events:none;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text);
-  font:16px/1.45 Figtree,system-ui,sans-serif}
-.fly i{font-style:normal;display:inline-block;will-change:transform,opacity}
-.fly i.enc{color:var(--green);text-shadow:0 0 8px rgba(30,215,96,.7);font-family:ui-monospace,Menlo,Consolas,monospace}
-
-/* ---------- anonymous message box ---------- */
-.ask-card{position:relative;padding:16px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
-.ask-sub{font-size:14px;color:var(--sub);margin-bottom:12px}
-.ask-card textarea{display:block;width:100%;min-height:104px;resize:vertical;font:inherit;font-size:16px;line-height:1.45;
-  color:var(--text);background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:12px;
-  padding:12px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
-.ask-card textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,215,96,.15)}
-.ask-card textarea::placeholder{color:var(--faint)}
-.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
-.ask-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
-.ask-count{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
-.ask-count.near{color:#f5a524}
-.ask-send{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;
-  background:var(--green);color:#000;font-size:15px;font-weight:700;transition:transform .15s,opacity .15s}
-.ask-send svg{width:16px;height:16px}
-.ask-send:hover{transform:scale(1.04)}
-.ask-send:disabled{opacity:.45;transform:none;cursor:default}
 
 /* ---------- easter eggs (type "matrix" or "durden") ---------- */
 .egg{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#000;cursor:pointer;
@@ -324,21 +298,6 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
     <ol class="list" id="recent"></ol>
   </section>
 
-  <section id="ask">
-    <div class="head"><h2 id="askTitle" data-i18n="askTitle">Tell me something</h2></div>
-    <form class="ask-card" id="askForm" novalidate>
-      <p class="ask-sub" data-i18n="askSub">anonymous. i won't know who you are, promise</p>
-      <textarea id="askText" maxlength="500" rows="3" data-i18n-ph="askPh" placeholder="" aria-labelledby="askTitle"></textarea>
-      <input class="hp" id="askHp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div class="ask-foot">
-        <span class="ask-count" id="askCount">0/500</span>
-        <button class="ask-send" id="askSend" type="submit" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
-          <span data-i18n="askSend">Send</span>
-        </button>
-      </div>
-    </form>
-  </section>
 </main>
 
 <div class="toast" id="toast" role="status"></div>
@@ -347,9 +306,6 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 const LASTFM = { user: "matrixdurden", key: "09548fa8d9c0083c741ea417156df519", pollSeconds: 30, recent: 6 };
 // Spotify app > profile > ... > Share > Copy link to profile. Empty hides the button.
 const SPOTIFY_PROFILE = "https://open.spotify.com/user/316pc4quhjqg6jdhddes56wilbze";
-// Anonymous messages post straight to a Discord webhook. The URL is XOR'd + split so it never sits
-// in plain text in this public repo (repo scrapers look for it); devtools can still reveal it.
-const INBOX = { k: "tylerdurden", p: ["s/Ex0CFA==", "NF82CzcxKAsiLT", "AjAioFQCA2KwsR", "FCktCAY3HAIFCh", "NWVSwBFlwKJw4G", "VzwAERQoEUsRRB", "tcIxYmFAk/Jh8z", "UFhNSlRUQ1NCQE", "ZBRUxZUUNUQ0tX", "Hh1WGwAQDBodDx", "0XFh4BXAcaH0sE", "HA0YFQFeWl0ADB"] };
 // Last.fm serves this star image when a track has no cover
 const NO_ART = "2a96cbd8b46e442fc41c2b86b821562f";
 
@@ -368,9 +324,6 @@ const STRINGS = {
     city: "denizli",
     stListening: "listening right now", stJust: "was just here", stNightOwl: "still up",
     stAsleep: "asleep", stAround: "was here a bit ago", stAway: "away",
-    askTitle: "Tell me something", askSub: "anonymous. i won't know who you are, promise 🤐",
-    askPh: "a confession, a song, a hello...", askSend: "Send",
-    askOk: "encrypted & delivered 💚", askSlow: "easy there, try again in a few minutes", askErr: "couldn't send it, try again later",
     eggMatrix: ["wake up, visitor...", "the matrix has you.", "follow the white rabbit. 🐇"],
     eggFc: ["the first rule of fight club:", "you do not talk about fight club.", "", "the second rule:", "you don't tell anyone about this page. 🤫"],
     eggHint: "tap or press any key to leave"
@@ -389,9 +342,6 @@ const STRINGS = {
     city: "denizli",
     stListening: "şu an müzik dinliyor", stJust: "az önce buradaydı", stNightOwl: "hâlâ uyanık",
     stAsleep: "uyuyor", stAround: "biraz önce buradaydı", stAway: "ortalıkta yok",
-    askTitle: "Bana bir şey söyle", askSub: "isimsiz. kim olduğunu bilmeyeceğim, söz 🤐",
-    askPh: "bir itiraf, bir şarkı, bir selam...", askSend: "Gönder",
-    askOk: "şifrelendi ve iletildi 💚", askSlow: "yavaş ol biraz, birkaç dakika sonra tekrar dene", askErr: "gönderilemedi, sonra tekrar dene",
     eggMatrix: ["uyan, ziyaretçi...", "matrix seni ele geçirdi.", "beyaz tavşanı takip et. 🐇"],
     eggFc: ["dövüş kulübü'nün birinci kuralı:", "dövüş kulübü hakkında konuşmazsın.", "", "ikinci kuralı:", "bu sayfayı kimseye söylemezsin. 🤫"],
     eggHint: "çıkmak için dokun ya da bir tuşa bas"
@@ -400,7 +350,6 @@ const STRINGS = {
 const T = STRINGS[window.LANG];
 document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = T[el.dataset.i18n]; });
 document.querySelectorAll("[data-i18n-label]").forEach(el => { el.setAttribute("aria-label", T[el.dataset.i18nLabel]); });
-document.querySelectorAll("[data-i18n-ph]").forEach(el => { el.placeholder = T[el.dataset.i18nPh]; });
 document.querySelector('meta[name="description"]').content = T.desc;
 if (SPOTIFY_PROFILE){ const a = document.getElementById("spotifyLink"); a.href = SPOTIFY_PROFILE; a.hidden = false; }
 
@@ -770,105 +719,6 @@ $("me").addEventListener("click", () => {
   clearTimeout($("me").peekT);
   $("me").peekT = setTimeout(() => $("me").classList.remove("peek"), 3000);
 });
-
-/* ===================== anonymous inbox ===================== */
-const askText = $("askText");
-askText.addEventListener("input", () => {
-  const n = askText.value.length;
-  $("askCount").textContent = n + "/500";
-  $("askCount").classList.toggle("near", n > 450);
-  $("askSend").disabled = !askText.value.trim();
-});
-function inboxUrl(){
-  const raw = atob(INBOX.p.slice().reverse().join(""));
-  let out = "";
-  for (let i = 0; i < raw.length; i++) out += String.fromCharCode(raw.charCodeAt(i) ^ INBOX.k.charCodeAt(i % INBOX.k.length));
-  return out;
-}
-// No server to rate-limit, so each browser gets one message per 20s and five per 10 minutes
-function canSend(){
-  let log = [];
-  try { log = JSON.parse(localStorage.getItem("md-sent") || "[]"); } catch (e) {}
-  const t = Date.now();
-  log = log.filter(x => t - x < 10 * 60e3);
-  if ((log.length && t - log[log.length - 1] < 20e3) || log.length >= 5) return false;
-  log.push(t);
-  try { localStorage.setItem("md-sent", JSON.stringify(log)); } catch (e) {}
-  return true;
-}
-$("askForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const text = askText.value.trim().slice(0, 500);
-  if (!text) return;
-  if ($("askHp").value) return; // honeypot: bots fill the hidden field
-  if (!canSend()){ toast(T.askSlow); return; }
-  $("askSend").disabled = true;
-  try {
-    const r = await fetch(inboxUrl(), { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "anonim",
-        allowed_mentions: { parse: [] }, // never let a message ping anyone
-        embeds: [{ description: text, color: 0x1ed760, timestamp: new Date().toISOString(),
-          footer: { text: "matrixdurden · " + (window.LANG === "tr" ? "türkçe" : "english") } }]
-      }) });
-    if (!r.ok) throw new Error();
-    await flyAway(askText, text);
-    askText.value = "";
-    askText.style.color = "";
-    askText.dispatchEvent(new Event("input"));
-    toast(T.askOk);
-  } catch (err) {
-    toast(T.askErr);
-    $("askSend").disabled = !askText.value.trim();
-  }
-});
-
-// The sent text scrambles into Matrix glyphs, then every character flies up into the avatar
-async function flyAway(field, text){
-  if (reduceMotion || !document.body.animate) return;
-  const r = field.getBoundingClientRect(), cs = getComputedStyle(field);
-  const layer = document.createElement("div");
-  layer.className = "fly";
-  Object.assign(layer.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px",
-    padding: cs.padding, lineHeight: cs.lineHeight });
-  const chars = [...text].slice(0, 220);
-  layer.innerHTML = chars.map(c => c === "\n" ? "<br>" : `<i>${c === " " ? "&nbsp;" : esc(c)}</i>`).join("");
-  document.body.appendChild(layer);
-  field.style.color = "transparent";
-  const spans = [...layer.querySelectorAll("i")];
-  const glyphs = "アイウエオカキクケコサシスセソタチツテト0123456789";
-
-  // 1) scramble into glyphs, left to right
-  await new Promise(done => {
-    let n = 0;
-    const t = setInterval(() => {
-      spans.forEach((s, i) => {
-        if (s.textContent.trim() && i <= n * 6) {
-          s.textContent = glyphs[Math.random() * glyphs.length | 0];
-          s.classList.add("enc");
-        }
-      });
-      if (++n * 6 > spans.length + 12){ clearInterval(t); done(); }
-    }, 40);
-  });
-
-  // 2) fly into the avatar (it may be off-screen up top: they just shoot upward)
-  const a = document.querySelector(".avatar").getBoundingClientRect();
-  const tx = a.left + a.width / 2, ty = a.top + a.height / 2;
-  await Promise.all(spans.map((s, i) => {
-    const b = s.getBoundingClientRect();
-    const dx = tx - (b.left + b.width / 2), dy = ty - (b.top + b.height / 2);
-    const bend = (Math.random() - .5) * 160;
-    return s.animate([
-      { transform: "translate(0,0) scale(1)", opacity: 1 },
-      { transform: `translate(${dx * .45 + bend}px, ${dy * .45 - 40}px) scale(.9)`, opacity: 1, offset: .45 },
-      { transform: `translate(${dx}px, ${dy}px) scale(.2)`, opacity: 0 }
-    ], { duration: 900 + Math.random() * 300, delay: Math.min(i * 6, 600), easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" }).finished;
-  }));
-  layer.remove();
-  const av = document.querySelector(".avatar");
-  av.classList.remove("got"); void av.offsetWidth; av.classList.add("got");
-}
 
 /* ===================== easter eggs ===================== */
 function typeLines(el, lines, done){

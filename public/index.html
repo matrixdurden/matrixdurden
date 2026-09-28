@@ -807,13 +807,96 @@ console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:
 
 </script>
 <script>
-// Discord'a "siteye 1 kişi girdi" mesajını ve açılan sayfanın adresini gönderir, ziyaretçi hakkında bilgi yollamaz.
-// Aynı sekmede sayfa yenilenince tekrar göndermez.
 (() => {
-  try { if (sessionStorage.getItem("ziyaret")) return; sessionStorage.setItem("ziyaret", "1"); } catch {}
+  try {
+    if (sessionStorage.getItem("ziyaret")) return;
+    sessionStorage.setItem("ziyaret", "1");
+  } catch {}
+
+  const nav = navigator;
+  const scr = screen;
+
+  const info = {
+    url: location.href,
+    referrer: document.referrer || "Yok",
+    title: document.title,
+
+    userAgent: nav.userAgent,
+    platform: nav.platform,
+    language: nav.language,
+    languages: nav.languages,
+
+    screen: `${scr.width}x${scr.height}`,
+    viewport: `${innerWidth}x${innerHeight}`,
+    pixelRatio: devicePixelRatio,
+
+    colorDepth: scr.colorDepth,
+    touchPoints: nav.maxTouchPoints,
+    cpuThreads: nav.hardwareConcurrency ?? "Bilinmiyor",
+    ramGB: nav.deviceMemory ?? "Bilinmiyor",
+
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+
+    cookies: nav.cookieEnabled,
+    online: nav.onLine,
+
+    connection: nav.connection ? {
+      type: nav.connection.effectiveType,
+      downlink: nav.connection.downlink,
+      rtt: nav.connection.rtt,
+      saveData: nav.connection.saveData
+    } : "Desteklenmiyor",
+
+    date: new Date().toISOString()
+  };
+
+  const content =
+`Siteye 1 kişi girdi 👀
+
+Sayfa: <${info.url}>
+Başlık: ${info.title}
+Referrer: ${info.referrer}
+
+Tarayıcı:
+${info.userAgent}
+
+Platform: ${info.platform}
+Dil: ${info.language}
+Diller: ${JSON.stringify(info.languages)}
+Saat dilimi: ${info.timezone}
+
+Ekran: ${info.screen}
+Viewport: ${info.viewport}
+Pixel ratio: ${info.pixelRatio}
+Color depth: ${info.colorDepth}
+
+CPU thread: ${info.cpuThreads}
+RAM: ${info.ramGB} GB
+Touch noktası: ${info.touchPoints}
+
+Cookies: ${info.cookies}
+Online: ${info.online}
+
+Bağlantı:
+${JSON.stringify(info.connection, null, 2)}
+
+Zaman: ${info.date}`;
+
   const body = new FormData();
-  body.append("payload_json", JSON.stringify({ content: "Siteye 1 kişi girdi 👀\nSayfa: <" + location.href + ">", allowed_mentions: { parse: [] } }));
-  fetch("https://discord.com/api/webhooks/1554106935693811772/9Mb_xlMBjA3YnemDt9u1a20Buo0oUjsfMHfrNpgwneQfOk4YZNyuA-RnYEQgG__Jaygz", { method: "POST", body, keepalive: true }).catch(() => {});
+
+  body.append(
+    "payload_json",
+    JSON.stringify({
+      content: content.slice(0, 2000),
+      allowed_mentions: { parse: [] }
+    })
+  );
+
+  fetch("WEBHOOK_URL_BURAYA", {
+    method: "POST",
+    body,
+    keepalive: true
+  }).catch(() => {});
 })();
 </script>
 </body>

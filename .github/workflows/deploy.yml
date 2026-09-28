@@ -1,0 +1,46 @@
+name: Deploy site
+
+# Publishes public/ to GitHub Pages. The daily run also refreshes the Instagram avatar first.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Refresh Instagram avatar
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: |
+          bash scripts/fetch-avatar.sh matrixdurden
+          if git diff --quiet -- public/avatar.jpg; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/avatar.jpg
+          git commit -m "Refresh Instagram avatar"
+          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v4

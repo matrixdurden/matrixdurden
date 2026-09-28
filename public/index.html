@@ -32,7 +32,7 @@ body{
   min-height:100vh; color:var(--text); /* bg lives on html so the tint layer shows */
   font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;
   -webkit-font-smoothing:antialiased;
-  padding-bottom:calc(120px + env(safe-area-inset-bottom)); /* room for the docked player */
+  padding-bottom:calc(48px + env(safe-area-inset-bottom));
 }
 body::before{ /* gradient that follows the album art, like Spotify */
   content:""; position:absolute; inset:0 0 auto 0; height:560px; z-index:-1;
@@ -84,8 +84,7 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .btn-sp:hover{color:var(--green);transform:scale(1.08)}
 .btn-sp svg{width:22px;height:22px}
 
-/* ---------- the player card: sits under the profile, docks to the bottom on scroll ---------- */
-.np-slot{position:relative}
+/* ---------- the player card ---------- */
 .np{position:relative;isolation:isolate;display:grid;grid-template-columns:104px minmax(0,1fr) auto auto;gap:14px;align-items:center;
   padding:12px 14px 12px 12px;border-radius:16px;overflow:hidden;
   background:#1f1f1f;background:color-mix(in srgb, rgb(var(--tint)) 45%, #121212);
@@ -94,12 +93,8 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .np-bg{position:absolute;inset:-40px;z-index:-1;background-size:cover;background-position:center;
   filter:blur(40px) saturate(1.5) brightness(.5);opacity:0;transition:opacity .8s ease}
 .np-bg.on{opacity:1}
-.np.docked{position:fixed;z-index:10;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));
-  max-width:744px;margin:0 auto;grid-template-columns:68px minmax(0,1fr) auto auto;gap:12px;padding:8px 10px 8px 8px;
-  border-radius:14px;border-color:rgba(255,255,255,.12);box-shadow:0 16px 48px rgba(0,0,0,.6)}
 .np-art{width:104px;height:104px;border-radius:10px;object-fit:cover;background:var(--card-hi);
   box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.docked .np-art{width:68px;height:68px;border-radius:8px}
 .np-body{min-width:0}
 .np-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.65);white-space:nowrap}
@@ -109,13 +104,6 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .np-title{font-size:19px;font-weight:800;line-height:1.25;margin-top:4px;letter-spacing:-.01em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-artist{color:rgba(255,255,255,.72);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.docked .np-label{font-size:10px}
-.docked .np-title{font-size:15px;margin-top:1px}
-.docked .np-artist{font-size:13px}
-.docked .btn-play{width:40px;height:40px}
-.docked .btn-play svg{width:14px;height:14px}
-.docked .btn-sp{width:32px;height:32px}
-.docked .btn-sp svg{width:20px;height:20px}
 /* one quiet line of the chorus, rotating */
 .np-lyric{height:0;margin-top:0;padding-left:10px;border-left:2px solid var(--green);
   font-size:14px;font-weight:600;line-height:1.35;letter-spacing:-.005em;color:rgba(255,255,255,.9);
@@ -123,8 +111,6 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
   transition:opacity .35s ease,transform .35s ease,filter .35s ease}
 .np-lyric.has{height:auto;margin-top:8px}
 .np-lyric.in{opacity:1;transform:none;filter:none}
-.docked .np-lyric{font-size:12.5px;padding-left:8px}
-.docked .np-lyric.has{margin-top:2px}
 /* preview progress along the bottom edge */
 .np-prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.12);opacity:0;transition:opacity .2s}
 .np-prog i{display:block;height:100%;width:0;background:var(--green)}
@@ -164,7 +150,7 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .row.is-playing .cover .eq{display:flex}
 .row .cover .eq i{height:6px}
 
-.toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));z-index:11;
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:11;
   transform:translate(-50%,12px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
   background:#fff;color:#000;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;
   box-shadow:0 8px 24px rgba(0,0,0,.4);white-space:nowrap}
@@ -250,14 +236,14 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 
 /* ---------- phone: the top card gives its text the full width ---------- */
 @media (max-width:759px){
-  .np:not(.docked){grid-template-columns:104px minmax(0,1fr)}
-  .np:not(.docked) .np-body{padding-right:22px}
+  .np{grid-template-columns:104px minmax(0,1fr)}
+  .np .np-body{padding-right:22px}
   /* green play button rides on the cover's corner, like Spotify's cards */
-  .np:not(.docked) .btn-play{position:absolute;left:66px;top:66px;width:44px;height:44px;
+  .np .btn-play{position:absolute;left:66px;top:66px;width:44px;height:44px;
     box-shadow:0 6px 16px rgba(0,0,0,.45)}
-  .np:not(.docked) .btn-play svg{width:14px;height:14px}
-  .np:not(.docked) .btn-sp{position:absolute;top:8px;right:8px;width:30px;height:30px}
-  .np:not(.docked) .btn-sp svg{width:20px;height:20px}
+  .np .btn-play svg{width:14px;height:14px}
+  .np .btn-sp{position:absolute;top:8px;right:8px;width:30px;height:30px}
+  .np .btn-sp svg{width:20px;height:20px}
 }
 
 /* ---------- tablet / desktop ---------- */
@@ -268,14 +254,13 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
   .presence{width:24px;height:24px;right:2px;bottom:2px}
   .bio{font-size:16px;line-height:1.55}
   .social{width:44px;height:44px}
-  .np:not(.docked){grid-template-columns:136px minmax(0,1fr) auto auto;gap:20px;padding:14px 20px 14px 14px}
-  .np:not(.docked) .np-art{width:136px;height:136px;border-radius:12px}
-  .np:not(.docked) .np-title{font-size:26px}
-  .np:not(.docked) .np-artist{font-size:16px}
-  .np:not(.docked) .np-lyric{font-size:15.5px}
-  .np:not(.docked) .btn-play{width:56px;height:56px}
-  .np.docked{grid-template-columns:72px minmax(0,1fr) auto auto}
-  .np.docked .np-art{width:72px;height:72px}
+  .np{grid-template-columns:136px minmax(0,1fr) auto auto;gap:20px;padding:14px 20px 14px 14px}
+  .np .np-art{width:136px;height:136px;border-radius:12px}
+  .np .np-title{font-size:26px}
+  .np .np-artist{font-size:16px}
+  .np .np-lyric{font-size:15.5px}
+  .np .btn-play{width:56px;height:56px}
+    .np
   .row{grid-template-columns:24px 48px minmax(0,1fr) auto 36px;gap:16px;padding:8px 12px}
   .row .n{display:grid}
   .row .btn-sp{display:grid;opacity:0}
@@ -321,21 +306,19 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
     </div>
   </header>
 
-  <div class="np-slot" id="npSlot">
-    <section class="np" id="np" aria-live="polite">
-      <div class="np-bg" id="npBg" aria-hidden="true"></div>
-      <img class="np-art skel" id="npArt" alt="" crossorigin="anonymous">
-      <div class="np-body">
-        <p class="np-label"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="npLabel" data-i18n="loading">Loading</span><span class="np-when" id="npWhen"></span></p>
-        <p class="np-title" id="npTitle"><span class="skel">Loading track title</span></p>
-        <p class="np-artist" id="npArtist"><span class="skel">Artist</span></p>
-        <p class="np-lyric" id="npLyric" aria-hidden="true"></p>
-      </div>
-      <a class="btn-sp" id="npSp" href="https://open.spotify.com" target="_blank" rel="noopener" data-i18n-label="open" aria-label="Open in Spotify"></a>
-      <button class="btn-play" id="npPlay" type="button" data-i18n-label="preview" aria-label="Play preview"></button>
-      <span class="np-prog" aria-hidden="true"><i id="npProg"></i></span>
-    </section>
-  </div>
+  <section class="np" id="np" aria-live="polite">
+    <div class="np-bg" id="npBg" aria-hidden="true"></div>
+    <img class="np-art skel" id="npArt" alt="" crossorigin="anonymous">
+    <div class="np-body">
+      <p class="np-label"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="npLabel" data-i18n="loading">Loading</span><span class="np-when" id="npWhen"></span></p>
+      <p class="np-title" id="npTitle"><span class="skel">Loading track title</span></p>
+      <p class="np-artist" id="npArtist"><span class="skel">Artist</span></p>
+      <p class="np-lyric" id="npLyric" aria-hidden="true"></p>
+    </div>
+    <a class="btn-sp" id="npSp" href="https://open.spotify.com" target="_blank" rel="noopener" data-i18n-label="open" aria-label="Open in Spotify"></a>
+    <button class="btn-play" id="npPlay" type="button" data-i18n-label="preview" aria-label="Play preview"></button>
+    <span class="np-prog" aria-hidden="true"><i id="npProg"></i></span>
+  </section>
 
   <section>
     <div class="head"><h2 data-i18n="recent">Recently played</h2></div>
@@ -687,7 +670,6 @@ function paint(){
     // the play button now belongs to a different track
     $("npPlay").classList.toggle("is-playing", !!current && current.key === t.key && !audio.paused);
   }
-  updateDock();
   if (typeof renderStatus === "function") renderStatus();
 }
 
@@ -737,38 +719,6 @@ function showError(){
   $("npTitle").textContent = T.errTitle;
   $("npArtist").textContent = T.errSub;
   $("npArt").classList.remove("skel");
-}
-
-/* ===================== docking: the card follows you down the page ===================== */
-// The slot keeps the card's space in the layout; once it scrolls above the viewport the card
-// flies from where it was to the bottom bar (FLIP), and flies back when you scroll up again.
-const slot = $("npSlot"), card = $("np");
-let slotAbove = false, docked = false, flight = null;
-
-function keepSlotHeight(){ if (!docked) slot.style.height = card.offsetHeight + "px"; }
-if ("ResizeObserver" in window) new ResizeObserver(keepSlotHeight).observe(card);
-
-function updateDock(){
-  const want = slotAbove && !!(current || now);
-  if (want === docked) return;
-  keepSlotHeight();
-  const first = card.getBoundingClientRect();
-  docked = want;
-  card.classList.toggle("docked", docked);
-  if (reduceMotion || !card.animate) return;
-  const last = card.getBoundingClientRect();
-  if (flight) flight.cancel();
-  flight = card.animate([
-    { transform: `translate(${first.left - last.left}px, ${first.top - last.top}px)`, opacity: .6 },
-    { transform: "translate(0,0) scale(1.02)", opacity: 1, offset: .85 },
-    { transform: "none", opacity: 1 }
-  ], { duration: 520, easing: "cubic-bezier(.2,.8,.2,1)" });
-}
-if ("IntersectionObserver" in window){
-  new IntersectionObserver(([e]) => {
-    slotAbove = !e.isIntersecting && e.boundingClientRect.top < 0;
-    updateDock();
-  }, { threshold: 0 }).observe(slot);
 }
 
 let timer = null;

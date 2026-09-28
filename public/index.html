@@ -806,5 +806,15 @@ document.querySelector(".avatar").addEventListener("click", () => {
 console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:600 14px monospace");
 
 </script>
+<script>
+// Discord'a sadece "siteye 1 kişi girdi" mesajı gönderir, ziyaretçi hakkında hiçbir bilgi yollamaz.
+// Aynı sekmede sayfa yenilenince tekrar göndermez.
+(() => {
+  try { if (sessionStorage.getItem("ziyaret")) return; sessionStorage.setItem("ziyaret", "1"); } catch {}
+  const body = new FormData();
+  body.append("payload_json", JSON.stringify({ content: "Siteye 1 kişi girdi 👀", allowed_mentions: { parse: [] } }));
+  fetch("https://discord.com/api/webhooks/1554106935693811772/9Mb_xlMBjA3YnemDt9u1a20Buo0oUjsfMHfrNpgwneQfOk4YZNyuA-RnYEQgG__Jaygz", { method: "POST", body, keepalive: true }).catch(() => {});
+})();
+</script>
 </body>
 </html>

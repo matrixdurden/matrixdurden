@@ -46,7 +46,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ---------- profile ---------- */
 .profile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:48px 0 32px}
-.avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--card-hi);
+.avatar{display:block;width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--card-hi);
   box-shadow:0 8px 32px rgba(0,0,0,.5)}
 h1{font-size:clamp(36px,10vw,80px);font-weight:800;line-height:1;letter-spacing:-.03em;margin:0 0 12px}
 .bio{color:rgba(255,255,255,.8);font-size:16px;line-height:1.55;max-width:38ch;margin:0 auto}
@@ -160,41 +160,42 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .row.is-playing .cover .eq{display:flex}
 .row .cover .eq i{height:6px}
 
-/* ---------- projects shelf ---------- */
-.shelf{list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:150px;gap:12px;
-  overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
-  margin:0 calc(-1 * var(--gutter));padding:0 var(--gutter) 4px;scroll-padding:0 var(--gutter)}
-.shelf::-webkit-scrollbar{display:none}
-.shelf li{scroll-snap-align:start}
-.card{display:block;padding:10px;border-radius:8px;transition:background .2s}
-.card:hover{background:rgba(255,255,255,.07)}
-.logo{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;display:grid;place-items:center;
-  box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.08)}
-.logo::before{ /* soft light from the top-left, like a glossy app icon */
-  content:"";position:absolute;inset:0;background:radial-gradient(90% 70% at 20% 0,rgba(255,255,255,.28),transparent 60%)}
-.logo svg{position:relative;width:44%;height:44%;color:#fff;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));
-  transition:transform .3s cubic-bezier(.2,.8,.2,1)}
-.card:hover .logo svg{transform:scale(1.08) rotate(-4deg)}
-.card-t{margin-top:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-s{font-size:13px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
 .toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom));z-index:11;
   transform:translate(-50%,12px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
   background:#fff;color:#000;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;
   box-shadow:0 8px 24px rgba(0,0,0,.4);white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
-/* ---------- live clock + status ---------- */
-.status{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:5px 12px 5px 10px;border-radius:999px;
-  font-size:13px;font-weight:500;color:rgba(255,255,255,.78);background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08)}
-.status:empty{display:none}
-.status .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
-.status.on .dot{background:var(--green);animation:ping 2s infinite}
-.status.idle .dot{background:#f5a524}
-.status time{font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
-.status .colon{animation:blink 1s steps(1) infinite}
-@keyframes ping{0%{box-shadow:0 0 0 0 rgba(30,215,96,.55)}70%{box-shadow:0 0 0 8px rgba(30,215,96,0)}100%{box-shadow:0 0 0 0 rgba(30,215,96,0)}}
-@keyframes blink{50%{opacity:.25}}
+/* ---------- presence: a Discord-style dot on the avatar, time + mood in a bubble ---------- */
+.me{position:relative;flex:none;border-radius:50%;outline:none;cursor:pointer}
+.presence{position:absolute;right:2px;bottom:2px;width:24px;height:24px;border-radius:50%;
+  background:var(--faint);border:4px solid #1b1b1b;transition:background .4s}
+.presence.on{background:var(--green)}
+.presence.on::before{content:"";position:absolute;inset:-4px;border-radius:50%;animation:ping 2.2s infinite}
+.presence.idle{background:#f0b232}
+.presence.idle::after{ /* crescent moon, like Discord's idle */
+  content:"";position:absolute;width:62%;height:62%;left:-4%;top:-4%;border-radius:50%;background:#1b1b1b}
+.presence.away{background:transparent;box-shadow:inset 0 0 0 4px var(--faint)}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(30,215,96,.6)}70%{box-shadow:0 0 0 10px rgba(30,215,96,0)}100%{box-shadow:0 0 0 0 rgba(30,215,96,0)}}
+.bubble{position:absolute;left:50%;top:calc(100% + 12px);z-index:5;transform:translate(-50%,-6px);
+  padding:10px 14px;border-radius:12px;background:#f5f5f5;color:#111;white-space:nowrap;text-align:left;
+  box-shadow:0 12px 32px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.bubble::before{content:"";position:absolute;left:50%;top:-6px;width:12px;height:12px;background:#f5f5f5;
+  transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.bubble b{display:block;font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.bubble b small{font-size:13px;font-weight:600;letter-spacing:0;color:#666;margin-left:4px}
+.bubble .mood{display:block;font-size:13px;color:#444;margin-top:2px}
+.bubble .colon{animation:blink 1s steps(1) infinite}
+.me:hover .bubble,.me:focus-visible .bubble,.me.peek .bubble{opacity:1;transform:translate(-50%,0)}
+@keyframes blink{50%{opacity:.2}}
+.avatar.got{animation:got 1s ease}
+@keyframes got{0%{box-shadow:0 0 0 0 rgba(30,215,96,.9)}100%{box-shadow:0 0 0 22px rgba(30,215,96,0)}}
+
+/* ---------- sent message: characters scramble, then fly up to the avatar ---------- */
+.fly{position:fixed;z-index:30;pointer-events:none;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text);
+  font:16px/1.45 Figtree,system-ui,sans-serif}
+.fly i{font-style:normal;display:inline-block;will-change:transform,opacity}
+.fly i.enc{color:var(--green);text-shadow:0 0 8px rgba(30,215,96,.7);font-family:ui-monospace,Menlo,Consolas,monospace}
 
 /* ---------- anonymous message box ---------- */
 .ask-card{position:relative;padding:16px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
@@ -282,8 +283,6 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
   .row.is-playing:hover .n .eq{display:none}
   .row.is-playing:hover .n .i-pause{display:block}
   .row.is-playing .cover .eq{display:none}
-  /* desktop: plain 4-column grid, no hidden horizontal scroll */
-  .shelf{grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 12px;overflow:visible;margin:0 -10px;padding:0}
 }
 </style>
 </head>
@@ -291,10 +290,13 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 <main class="wrap">
 
   <header class="profile">
-    <img class="avatar" src="avatar.jpg" alt="" width="112" height="112"
-         onerror="this.onerror=null;this.src='https://avatars.githubusercontent.com/u/307172898?v=4'">
+    <div class="me" id="me" tabindex="0">
+      <img class="avatar" src="avatar.jpg" alt="" width="112" height="112"
+           onerror="this.onerror=null;this.src='https://avatars.githubusercontent.com/u/307172898?v=4'">
+      <span class="presence" id="presence" aria-hidden="true"></span>
+      <span class="bubble" id="bubble" role="status"></span>
+    </div>
     <div>
-      <p class="status" id="status" aria-live="polite"></p>
       <h1>matrixdurden</h1>
       <p class="bio" data-i18n="bio">hey, i'm muhammet. i get along with computers slightly better than with people, but i pick good songs for both. this is my little corner of the internet: what i'm listening to, what i'm building, all in one place.</p>
       <nav class="links">
@@ -354,34 +356,16 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
       </div>
     </form>
   </section>
-
-  <section id="projects">
-    <div class="head">
-      <h2 data-i18n="projects">Projects</h2>
-      <a class="more" href="https://github.com/matrixdurden?tab=repositories" target="_blank" rel="noopener" data-i18n="showAll">Show all</a>
-    </div>
-    <ul class="shelf" id="shelf"></ul>
-  </section>
 </main>
 
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 const LASTFM = { user: "matrixdurden", key: "09548fa8d9c0083c741ea417156df519", pollSeconds: 30, recent: 6 };
-const GITHUB = { user: "matrixdurden", hide: ["matrixdurden"], max: 8 };
 // Spotify app > profile > ... > Share > Copy link to profile. Empty hides the button.
 const SPOTIFY_PROFILE = "";
 // Anonymous messages go here (Railway service in /inbox), which forwards them to Discord
 const INBOX_URL = "https://inbox-production-c859.up.railway.app/message";
-// Logo per repo: a Lucide icon name and two gradient stops. Unknown repos get "code-xml".
-const PROJECTS = {
-  "bpkit":          { icon: "box",             from: "#0b3d91", to: "#38bdf8" },
-  "tunel":          { icon: "globe-lock",      from: "#064e3b", to: "#34d399" },
-  "kien":           { icon: "square-terminal", from: "#18181b", to: "#52525b" },
-  "opencode-kit":   { icon: "key-round",       from: "#78350f", to: "#fbbf24" },
-  "claude-server":  { icon: "server",          from: "#7c2d12", to: "#e8835f" },
-  "chatgpt-bridge": { icon: "cable",           from: "#2e1065", to: "#a78bfa" }
-};
 // Last.fm serves this star image when a track has no cover
 const NO_ART = "2a96cbd8b46e442fc41c2b86b821562f";
 
@@ -389,7 +373,7 @@ const STRINGS = {
   en: {
     bio: "hey, i'm muhammet. i get along with computers slightly better than with people, but i pick good songs for both. this is my little corner of the internet: what i'm listening to, what i'm building, all in one place.",
     loading: "Loading", open: "Open in Spotify", preview: "Play preview", recent: "Recently played",
-    projects: "Projects", showAll: "Show all", noPreview: "No preview for this one",
+    noPreview: "No preview for this one",
     live: "Now playing", last: "Last played", previewing: "Preview",
     errLabel: "Offline", errTitle: "Couldn't load music", errSub: "Trying again shortly",
     now: "just now", m: n => n + " min ago", h: n => n + " hr ago", d: n => n === 1 ? "1 day ago" : n + " days ago",
@@ -397,12 +381,12 @@ const STRINGS = {
     desc: "matrixdurden: software developer. See what I'm listening to right now.",
     away: ["i see you 👀", "come back, the song isn't over 🎧", "where'd you go? 🥺", "don't leave me on read"],
     awayPlaying: "still playing for you 🎧",
-    city: (hh, mm) => `<time>${hh}<span class="colon">:</span>${mm}</time> in İstanbul`,
-    stListening: "listening to music right now 🎧", stJust: "was just here", stNightOwl: "still up, night owl 🌙",
-    stAsleep: "probably asleep 😴", stAround: "was around a bit ago", stAway: "nowhere to be seen 👻",
+    city: "denizli",
+    stListening: "listening right now", stJust: "was just here", stNightOwl: "still up",
+    stAsleep: "asleep", stAround: "was here a bit ago", stAway: "away",
     askTitle: "Tell me something", askSub: "anonymous. i won't know who you are, promise 🤐",
     askPh: "a confession, a song, a hello...", askSend: "Send",
-    askOk: "sent! i'll read it 💌", askSlow: "easy there, try again in a few minutes", askErr: "couldn't send it, try again later",
+    askOk: "encrypted & delivered 💚", askSlow: "easy there, try again in a few minutes", askErr: "couldn't send it, try again later",
     eggMatrix: ["wake up, visitor...", "the matrix has you.", "follow the white rabbit. 🐇"],
     eggFc: ["the first rule of fight club:", "you do not talk about fight club.", "", "the second rule:", "you don't tell anyone about this page. 🤫"],
     eggHint: "tap or press any key to leave"
@@ -410,7 +394,7 @@ const STRINGS = {
   tr: {
     bio: "selam, ben muhammet. bilgisayarlarla anlaşmayı insanlardan biraz daha iyi beceririm ama ikisine de iyi şarkı seçerim. burası internetteki küçük köşem: ne dinliyorum, ne yapıyorum, hepsi burada.",
     loading: "Yükleniyor", open: "Spotify'da aç", preview: "Önizlemeyi çal", recent: "Son dinlenenler",
-    projects: "Projeler", showAll: "Tümünü göster", noPreview: "Bu şarkının önizlemesi yok",
+    noPreview: "Bu şarkının önizlemesi yok",
     live: "Şu an çalıyor", last: "Son çalınan", previewing: "Önizleme",
     errLabel: "Bağlanılamadı", errTitle: "Müzik yüklenemedi", errSub: "Biraz sonra tekrar denenecek",
     now: "az önce", m: n => n + " dk önce", h: n => n + " sa önce", d: n => n + " gün önce",
@@ -418,12 +402,12 @@ const STRINGS = {
     desc: "matrixdurden: yazılım geliştirici. Şu an ne dinlediğini gör.",
     away: ["seni görüyorum 👀", "geri gel, şarkı daha bitmedi 🎧", "nereye gittin? 🥺", "görüldüde bırakma beni"],
     awayPlaying: "hâlâ senin için çalıyor 🎧",
-    city: (hh, mm) => `İstanbul'da saat <time>${hh}<span class="colon">:</span>${mm}</time>`,
-    stListening: "şu an müzik dinliyor 🎧", stJust: "az önce buradaydı", stNightOwl: "uyumamış, gece kuşu 🌙",
-    stAsleep: "muhtemelen uyuyor 😴", stAround: "biraz önce ortalıktaydı", stAway: "ortalıkta yok 👻",
+    city: "denizli",
+    stListening: "şu an müzik dinliyor", stJust: "az önce buradaydı", stNightOwl: "hâlâ uyanık",
+    stAsleep: "uyuyor", stAround: "biraz önce buradaydı", stAway: "ortalıkta yok",
     askTitle: "Bana bir şey söyle", askSub: "isimsiz. kim olduğunu bilmeyeceğim, söz 🤐",
     askPh: "bir itiraf, bir şarkı, bir selam...", askSend: "Gönder",
-    askOk: "gitti! okuyacağım 💌", askSlow: "yavaş ol biraz, birkaç dakika sonra tekrar dene", askErr: "gönderilemedi, sonra tekrar dene",
+    askOk: "şifrelendi ve iletildi 💚", askSlow: "yavaş ol biraz, birkaç dakika sonra tekrar dene", askErr: "gönderilemedi, sonra tekrar dene",
     eggMatrix: ["uyan, ziyaretçi...", "matrix seni ele geçirdi.", "beyaz tavşanı takip et. 🐇"],
     eggFc: ["dövüş kulübü'nün birinci kuralı:", "dövüş kulübü hakkında konuşmazsın.", "", "ikinci kuralı:", "bu sayfayı kimseye söylemezsin. 🤫"],
     eggHint: "çıkmak için dokun ya da bir tuşa bas"
@@ -441,8 +425,6 @@ const ICON = {
   pause: '<svg class="i-pause" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx=".7"/><rect x="9.5" y="2" width="3.5" height="12" rx=".7"/></svg>',
   spotify: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0a12 12 0 1 0 0 24 12 12 0 0 0 0-24zm5.5 17.3a.75.75 0 0 1-1 .25c-2.85-1.74-6.44-2.13-10.67-1.17a.75.75 0 1 1-.33-1.46c4.63-1.06 8.6-.6 11.76 1.33.36.21.47.68.25 1.04zm1.47-3.26a.94.94 0 0 1-1.29.31c-3.26-2-8.23-2.58-12.09-1.41a.94.94 0 1 1-.54-1.8c4.4-1.33 9.88-.68 13.61 1.61.44.27.58.85.31 1.29zm.13-3.4C15.19 8.33 8.75 8.12 5.02 9.25a1.13 1.13 0 1 1-.65-2.16c4.28-1.3 11.4-1.05 15.9 1.62a1.13 1.13 0 0 1-1.16 1.94z"/></svg>'
 };
-/* Lucide icons (ISC license, lucide.dev), inner SVG markup only */
-const LUCIDE = { "code-xml": "<path d=\"m18 16 4-4-4-4\"/> <path d=\"m6 8-4 4 4 4\"/> <path d=\"m14.5 4-5 16\"/>", "cable": "<path d=\"M17 21v-2a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1\"/> <path d=\"M19 15V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V9\"/> <path d=\"M21 21v-2h-4\"/> <path d=\"M3 5h4V3\"/> <path d=\"M7 5a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1V3\"/>", "server": "<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/> <rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/> <line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/> <line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>", "key-round": "<path d=\"M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z\"/> <circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>", "square-terminal": "<path d=\"m7 11 2-2-2-2\"/> <path d=\"M11 13h4\"/> <rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"/>", "globe-lock": "<path d=\"M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13\"/> <path d=\"M2 12h8.5\"/> <path d=\"M20 6V4a2 2 0 1 0-4 0v2\"/> <rect width=\"8\" height=\"5\" x=\"14\" y=\"6\" rx=\"1\"/>", "box": "<path d=\"M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/> <path d=\"m3.3 7 8.7 5 8.7-5\"/> <path d=\"M12 22V12\"/>" };
 const EQ = '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>';
 document.querySelectorAll(".btn-play").forEach(b => { b.innerHTML = ICON.play + ICON.pause; });
 document.getElementById("npSp").innerHTML = ICON.spotify;
@@ -782,24 +764,31 @@ document.addEventListener("visibilitychange", () => {
 });
 poll();
 
-/* ===================== live clock + status ===================== */
+/* ===================== presence: dot on the avatar, time + mood in the bubble (Denizli = İstanbul timezone) ===================== */
 const clockFmt = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 function renderStatus(){
   const [hh, mm] = clockFmt.format(new Date()).split(":");
   const hour = +hh;
   const mins = now ? (now.live ? 0 : (Date.now() / 1000 - now.uts) / 60) : Infinity;
-  let mood, cls = "";
+  let mood, cls;
   if (now && now.live){ mood = T.stListening; cls = "on"; }
   else if (mins < 20){ mood = T.stJust; cls = "on"; }
-  else if (hour >= 1 && hour < 8){ mood = mins < 90 ? T.stNightOwl : T.stAsleep; cls = mins < 90 ? "idle" : ""; }
+  else if (hour >= 1 && hour < 8){ mood = mins < 90 ? T.stNightOwl : T.stAsleep; cls = "idle"; }
   else if (mins < 180){ mood = T.stAround; cls = "idle"; }
-  else mood = T.stAway;
-  const el = $("status");
-  el.className = "status " + cls;
-  el.innerHTML = `<span class="dot" aria-hidden="true"></span><span>${T.city(hh, mm)} · ${mood}</span>`;
+  else { mood = T.stAway; cls = "away"; }
+  $("presence").className = "presence " + cls;
+  $("bubble").innerHTML = `<b>${hh}<span class="colon">:</span>${mm}<small>${T.city}</small></b><span class="mood">${mood}</span>`;
+  $("me").setAttribute("aria-label", `${hh}:${mm} ${T.city}, ${mood}`);
 }
 renderStatus();
 setInterval(renderStatus, 20e3);
+// let people discover the bubble once, then it lives on hover / tap
+setTimeout(() => { $("me").classList.add("peek"); setTimeout(() => $("me").classList.remove("peek"), 3200); }, 1800);
+$("me").addEventListener("click", () => {
+  $("me").classList.add("peek");
+  clearTimeout($("me").peekT);
+  $("me").peekT = setTimeout(() => $("me").classList.remove("peek"), 3000);
+});
 
 /* ===================== anonymous inbox ===================== */
 const askText = $("askText");
@@ -819,7 +808,9 @@ $("askForm").addEventListener("submit", async e => {
       body: JSON.stringify({ text, lang: window.LANG, website: $("askHp").value }) });
     if (r.status === 429) throw Object.assign(new Error(), { slow: true });
     if (!r.ok) throw new Error();
+    await flyAway(askText, text);
     askText.value = "";
+    askText.style.color = "";
     askText.dispatchEvent(new Event("input"));
     toast(T.askOk);
   } catch (err) {
@@ -827,6 +818,53 @@ $("askForm").addEventListener("submit", async e => {
     $("askSend").disabled = !askText.value.trim();
   }
 });
+
+// The sent text scrambles into Matrix glyphs, then every character flies up into the avatar
+async function flyAway(field, text){
+  if (reduceMotion || !document.body.animate) return;
+  const r = field.getBoundingClientRect(), cs = getComputedStyle(field);
+  const layer = document.createElement("div");
+  layer.className = "fly";
+  Object.assign(layer.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px",
+    padding: cs.padding, lineHeight: cs.lineHeight });
+  const chars = [...text].slice(0, 220);
+  layer.innerHTML = chars.map(c => c === "\n" ? "<br>" : `<i>${c === " " ? "&nbsp;" : esc(c)}</i>`).join("");
+  document.body.appendChild(layer);
+  field.style.color = "transparent";
+  const spans = [...layer.querySelectorAll("i")];
+  const glyphs = "アイウエオカキクケコサシスセソタチツテト0123456789";
+
+  // 1) scramble into glyphs, left to right
+  await new Promise(done => {
+    let n = 0;
+    const t = setInterval(() => {
+      spans.forEach((s, i) => {
+        if (s.textContent.trim() && i <= n * 6) {
+          s.textContent = glyphs[Math.random() * glyphs.length | 0];
+          s.classList.add("enc");
+        }
+      });
+      if (++n * 6 > spans.length + 12){ clearInterval(t); done(); }
+    }, 40);
+  });
+
+  // 2) fly into the avatar (it may be off-screen up top: they just shoot upward)
+  const a = document.querySelector(".avatar").getBoundingClientRect();
+  const tx = a.left + a.width / 2, ty = a.top + a.height / 2;
+  await Promise.all(spans.map((s, i) => {
+    const b = s.getBoundingClientRect();
+    const dx = tx - (b.left + b.width / 2), dy = ty - (b.top + b.height / 2);
+    const bend = (Math.random() - .5) * 160;
+    return s.animate([
+      { transform: "translate(0,0) scale(1)", opacity: 1 },
+      { transform: `translate(${dx * .45 + bend}px, ${dy * .45 - 40}px) scale(.9)`, opacity: 1, offset: .45 },
+      { transform: `translate(${dx}px, ${dy}px) scale(.2)`, opacity: 0 }
+    ], { duration: 900 + Math.random() * 300, delay: Math.min(i * 6, 600), easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" }).finished;
+  }));
+  layer.remove();
+  const av = document.querySelector(".avatar");
+  av.classList.remove("got"); void av.offsetWidth; av.classList.add("got");
+}
 
 /* ===================== easter eggs ===================== */
 function typeLines(el, lines, done){
@@ -913,44 +951,6 @@ document.querySelector(".avatar").addEventListener("click", () => {
 });
 console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:600 14px monospace");
 
-/* ===================== projects shelf (GitHub) ===================== */
-// Stable hue per repo name, for repos that aren't in PROJECTS yet
-function hue(s){ let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 360; }
-
-function logo(name){
-  const p = PROJECTS[name] || { icon: "code-xml", from: `hsl(${hue(name)} 55% 22%)`, to: `hsl(${(hue(name) + 30) % 360} 65% 55%)` };
-  const svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LUCIDE[p.icon] || LUCIDE["code-xml"]}</svg>`;
-  return `<span class="logo" style="background:linear-gradient(145deg,${p.to},${p.from})">${svg}</span>`;
-}
-
-function renderRepos(repos){
-  const list = repos.filter(r => !r.fork && !GITHUB.hide.includes(r.name)).slice(0, GITHUB.max);
-  if (!list.length){ $("projects").hidden = true; return; }
-  $("shelf").innerHTML = list.map(r => {
-    const sub = [r.language, ago(Date.parse(r.pushed_at) / 1000)].filter(Boolean).join(" · ");
-    return `<li><a class="card" href="${esc(r.html_url)}" target="_blank" rel="noopener" title="${esc(r.description || r.name)}">
-      ${logo(r.name)}
-      <p class="card-t">${esc(r.name)}</p>
-      <p class="card-s">${esc(r.description || sub)}</p>
-    </a></li>`;
-  }).join("");
-}
-
-(async function loadRepos(){
-  const KEY = "gh-repos", cached = store.get(KEY);
-  if (cached) renderRepos(cached.data);
-  else $("shelf").innerHTML = '<li><div class="card"><div class="logo skel"></div></div></li>'.repeat(4);
-  if (cached && Date.now() - cached.at < 3600e3) return; // GitHub allows 60 calls/hr unauthenticated
-  try {
-    const r = await fetch("https://api.github.com/users/" + GITHUB.user + "/repos?sort=pushed&per_page=30",
-      { headers: { Accept: "application/vnd.github+json" } });
-    if (!r.ok) throw new Error("http " + r.status);
-    const data = await r.json();
-    store.set(KEY, { at: Date.now(), data: data.map(({ name, fork, description, language, pushed_at, html_url }) =>
-      ({ name, fork, description, language, pushed_at, html_url })) });
-    renderRepos(data);
-  } catch (e) { if (!cached) $("projects").hidden = true; }
-})();
 </script>
 </body>
 </html>

@@ -325,7 +325,9 @@ const STRINGS = {
     errLabel: "Offline", errTitle: "Couldn't load music", errSub: "Trying again shortly",
     now: "just now", m: n => n + " min ago", h: n => n + " hr ago", d: n => n === 1 ? "1 day ago" : n + " days ago",
     mo: n => n === 1 ? "1 month ago" : n + " months ago", y: n => n === 1 ? "1 year ago" : n + " years ago",
-    desc: "matrixdurden: software developer. See what I'm listening to right now."
+    desc: "matrixdurden: software developer. See what I'm listening to right now.",
+    away: ["i see you 👀", "come back, the song isn't over 🎧", "where'd you go? 🥺", "don't leave me on read"],
+    awayPlaying: "still playing for you 🎧"
   },
   tr: {
     bio: "selam, ben muhammet. bilgisayarlarla anlaşmayı insanlardan biraz daha iyi beceririm ama ikisine de iyi şarkı seçerim. burası internetteki küçük köşem: ne dinliyorum, ne yapıyorum, hepsi burada.",
@@ -335,7 +337,9 @@ const STRINGS = {
     errLabel: "Bağlanılamadı", errTitle: "Müzik yüklenemedi", errSub: "Biraz sonra tekrar denenecek",
     now: "az önce", m: n => n + " dk önce", h: n => n + " sa önce", d: n => n + " gün önce",
     mo: n => n + " ay önce", y: n => n + " yıl önce",
-    desc: "matrixdurden: yazılım geliştirici. Şu an ne dinlediğini gör."
+    desc: "matrixdurden: yazılım geliştirici. Şu an ne dinlediğini gör.",
+    away: ["seni görüyorum 👀", "geri gel, şarkı daha bitmedi 🎧", "nereye gittin? 🥺", "görüldüde bırakma beni"],
+    awayPlaying: "hâlâ senin için çalıyor 🎧"
   }
 };
 const T = STRINGS[window.LANG];
@@ -577,8 +581,6 @@ function paint(){
     // the play button now belongs to a different track
     $("npPlay").classList.toggle("is-playing", !!current && current.key === t.key && !audio.paused);
   }
-  const nt = now && now.t;
-  document.title = preview ? t.name + " · " + t.artist : now.live ? nt.name + " · " + nt.artist : "matrixdurden";
   updateDock();
 }
 
@@ -668,6 +670,14 @@ async function poll(){
   if (!document.hidden) timer = setTimeout(poll, LASTFM.pollSeconds * 1000);
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); else clearTimeout(timer); });
+
+// The tab always says matrixdurden, except when you leave it
+const TITLE = "matrixdurden";
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden){ document.title = TITLE; return; }
+  const playing = current && !audio.paused;
+  document.title = playing ? T.awayPlaying : T.away[Math.floor(Math.random() * T.away.length)];
+});
 poll();
 
 /* ===================== projects shelf (GitHub) ===================== */

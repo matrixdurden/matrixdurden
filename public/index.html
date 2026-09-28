@@ -364,8 +364,9 @@ h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
 const LASTFM = { user: "matrixdurden", key: "09548fa8d9c0083c741ea417156df519", pollSeconds: 30, recent: 6 };
 // Spotify app > profile > ... > Share > Copy link to profile. Empty hides the button.
 const SPOTIFY_PROFILE = "";
-// Anonymous messages go here (Railway service in /inbox), which forwards them to Discord
-const INBOX_URL = "https://inbox-production-c859.up.railway.app/message";
+// Anonymous messages post straight to a Discord webhook. The URL is XOR'd + split so it never sits
+// in plain text in this public repo (repo scrapers look for it); devtools can still reveal it.
+const INBOX = { k: "tylerdurden", p: ["s/Ex0CFA==", "NF82CzcxKAsiLT", "AjAioFQCA2KwsR", "FCktCAY3HAIFCh", "NWVSwBFlwKJw4G", "VzwAERQoEUsRRB", "tcIxYmFAk/Jh8z", "UFhNSlRUQ1NCQE", "ZBRUxZUUNUQ0tX", "Hh1WGwAQDBodDx", "0XFh4BXAcaH0sE", "HA0YFQFeWl0ADB"] };
 // Last.fm serves this star image when a track has no cover
 const NO_ART = "2a96cbd8b46e442fc41c2b86b821562f";
 
@@ -798,15 +799,38 @@ askText.addEventListener("input", () => {
   $("askCount").classList.toggle("near", n > 450);
   $("askSend").disabled = !askText.value.trim();
 });
+function inboxUrl(){
+  const raw = atob(INBOX.p.slice().reverse().join(""));
+  let out = "";
+  for (let i = 0; i < raw.length; i++) out += String.fromCharCode(raw.charCodeAt(i) ^ INBOX.k.charCodeAt(i % INBOX.k.length));
+  return out;
+}
+// No server to rate-limit, so each browser gets one message per 20s and five per 10 minutes
+function canSend(){
+  let log = [];
+  try { log = JSON.parse(localStorage.getItem("md-sent") || "[]"); } catch (e) {}
+  const t = Date.now();
+  log = log.filter(x => t - x < 10 * 60e3);
+  if ((log.length && t - log[log.length - 1] < 20e3) || log.length >= 5) return false;
+  log.push(t);
+  try { localStorage.setItem("md-sent", JSON.stringify(log)); } catch (e) {}
+  return true;
+}
 $("askForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const text = askText.value.trim();
+  const text = askText.value.trim().slice(0, 500);
   if (!text) return;
+  if ($("askHp").value) return; // honeypot: bots fill the hidden field
+  if (!canSend()){ toast(T.askSlow); return; }
   $("askSend").disabled = true;
   try {
-    const r = await fetch(INBOX_URL, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, lang: window.LANG, website: $("askHp").value }) });
-    if (r.status === 429) throw Object.assign(new Error(), { slow: true });
+    const r = await fetch(inboxUrl(), { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "anonim",
+        allowed_mentions: { parse: [] }, // never let a message ping anyone
+        embeds: [{ description: text, color: 0x1ed760, timestamp: new Date().toISOString(),
+          footer: { text: "matrixdurden · " + (window.LANG === "tr" ? "türkçe" : "english") } }]
+      }) });
     if (!r.ok) throw new Error();
     await flyAway(askText, text);
     askText.value = "";
@@ -814,7 +838,7 @@ $("askForm").addEventListener("submit", async e => {
     askText.dispatchEvent(new Event("input"));
     toast(T.askOk);
   } catch (err) {
-    toast(err.slow ? T.askSlow : T.askErr);
+    toast(T.askErr);
     $("askSend").disabled = !askText.value.trim();
   }
 });

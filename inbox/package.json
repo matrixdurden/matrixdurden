@@ -1,8 +1,0 @@
-{
-  "name": "matrixdurden-inbox",
-  "private": true,
-  "description": "Anonymous message box for matrixdurden's site; forwards to a Discord webhook",
-  "type": "module",
-  "engines": { "node": ">=20" },
-  "scripts": { "start": "node server.js" }
-}

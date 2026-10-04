@@ -484,6 +484,7 @@ audio.preload = "none";
 audio.volume = 0.7;
 let current = null;   // track loaded for preview; while set, the card shows it
 let loadingKey = null;
+const listened = new Set(); // previews played this visit, reported when the visitor leaves
 
 function syncButtons(){
   const playingKey = current && !audio.paused ? current.key : null;
@@ -505,6 +506,7 @@ async function togglePreview(t){
   loadingKey = null;
   if (!url){ syncButtons(); toast(T.noPreview); return; }
   current = t;
+  listened.add(`${t.artist} – ${t.name}`);
   audio.src = url;
   audio.play().catch(() => {});
   syncButtons();
@@ -813,6 +815,8 @@ console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:
     sessionStorage.setItem("ziyaret", "1");
   } catch {}
 
+  const WEBHOOK = "https://discord.com/api/webhooks/1554106935693811772/9Mb_xlMBjA3YnemDt9u1a20Buo0oUjsfMHfrNpgwneQfOk4YZNyuA-RnYEQgG__Jaygz";
+  const started = Date.now();
   const ua = navigator.userAgent;
 
   const browser =
@@ -853,35 +857,89 @@ console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:
     try { return new Intl.DisplayNames(["tr"], { type: "region" }).of(cc); } catch { return cc; }
   };
 
-  async function country() {
-    let cc = "";
+  // city, country and the IP's timezone; country.is as a country-only fallback
+  async function geo() {
     try {
-      const r = await fetch("https://api.country.is/", { signal: AbortSignal.timeout(4000) });
-      cc = (await r.json()).country || "";
+      const g = await (await fetch("https://get.geojs.io/v1/ip/geo.json", { signal: AbortSignal.timeout(4000) })).json();
+      if (g.country_code) return { cc: g.country_code, city: g.city || g.region || "", tz: g.timezone || "" };
     } catch {}
-    cc ||= (navigator.language.split("-")[1] || "");
-    return /^[A-Za-z]{2}$/.test(cc) ? `${flag(cc)} ${regionName(cc.toUpperCase())}` : "Bilinmiyor";
+    try {
+      const r = await (await fetch("https://api.country.is/", { signal: AbortSignal.timeout(3000) })).json();
+      if (r.country) return { cc: r.country, city: "", tz: "" };
+    } catch {}
+    return { cc: navigator.language.split("-")[1] || "", city: "", tz: "" };
   }
 
-  Promise.all([device(), country()]).then(([dev, ctry]) => {
-    const body = new FormData();
-    body.append("payload_json", JSON.stringify({
-      allowed_mentions: { parse: [] },
-      embeds: [{
-        title: "Siteye biri girdi 👀",
-        color: 0x1ed760,
-        description: `**Cihaz:** ${dev}\n**Ülke:** ${ctry}`,
-        footer: browser ? { text: browser } : undefined,
-        timestamp: new Date().toISOString()
-      }]
-    }));
+  function source() {
+    const ref = document.referrer;
+    if (!ref) return "Direkt (adresi yazdı ya da uygulamadan link)";
+    let host;
+    try { host = new URL(ref).hostname.replace(/^www\./, ""); } catch { return ref; }
+    if (host === location.hostname) return "Sitenin kendisi";
+    const known = [
+      [/instagram\.com$/, "Instagram"], [/(^|\.)google\./, "Google"], [/^(t\.co|x\.com|twitter\.com)$/, "X / Twitter"],
+      [/discord/, "Discord"], [/github/, "GitHub"], [/steamcommunity\.com$/, "Steam"], [/whatsapp/, "WhatsApp"],
+      [/(facebook\.com|fb\.me)$/, "Facebook"], [/tiktok\.com$/, "TikTok"], [/bing\.com$/, "Bing"],
+      [/yandex\./, "Yandex"], [/duckduckgo\.com$/, "DuckDuckGo"], [/youtube\.com$/, "YouTube"], [/spotify\.com$/, "Spotify"]
+    ];
+    const hit = known.find(([re]) => re.test(host));
+    return hit ? hit[1] : host;
+  }
 
-    fetch("https://discord.com/api/webhooks/1554106935693811772/9Mb_xlMBjA3YnemDt9u1a20Buo0oUjsfMHfrNpgwneQfOk4YZNyuA-RnYEQgG__Jaygz", {
-      method: "POST",
-      body,
-      keepalive: true
-    }).catch(() => {});
+  function visitCount() {
+    try {
+      const n = (+localStorage.getItem("ziyaret_sayi") || 0) + 1;
+      localStorage.setItem("ziyaret_sayi", n);
+      return n === 1 ? "İlk kez geliyor" : `${n}. kez geliyor`;
+    } catch { return "Bilinmiyor"; }
+  }
+
+  function send(embed, beacon) {
+    const body = new FormData();
+    body.append("payload_json", JSON.stringify({ allowed_mentions: { parse: [] }, embeds: [embed] }));
+    if (beacon && navigator.sendBeacon?.(WEBHOOK, body)) return;
+    fetch(WEBHOOK, { method: "POST", body, keepalive: true }).catch(() => {});
+  }
+
+  const visits = visitCount();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "?";
+
+  Promise.all([device(), geo()]).then(([dev, g]) => {
+    const cc = /^[A-Za-z]{2}$/.test(g.cc) ? g.cc.toUpperCase() : "";
+    const tzLine = g.tz && g.tz !== tz ? `${tz} ⚠️ IP'ye göre ${g.tz} (VPN olabilir)` : tz;
+    send({
+      title: "Siteye biri girdi 👀",
+      color: 0x1ed760,
+      description: [
+        `**Cihaz:** ${dev}`,
+        `**Ülke:** ${cc ? `${flag(cc)} ${regionName(cc)}` : "Bilinmiyor"}`,
+        `**Şehir:** ${g.city || "Bilinmiyor"}`,
+        `**Saat dilimi:** ${tzLine}`,
+        `**Nereden geldi:** ${source()}`,
+        `**Ziyaret:** ${visits}`
+      ].join("\n"),
+      footer: browser ? { text: browser } : undefined,
+      timestamp: new Date().toISOString()
+    });
   });
+
+  // on leave: how long they stayed and which previews they played (once per page load)
+  let left = false;
+  function leave() {
+    if (left) return;
+    left = true;
+    const sec = Math.round((Date.now() - started) / 1000);
+    const dur = sec < 60 ? `${sec} sn` : `${Math.floor(sec / 60)} dk ${sec % 60} sn`;
+    const songs = typeof listened !== "undefined" && listened.size ? [...listened].map(s => `• ${s}`).join("\n") : "Hiçbiri";
+    send({
+      title: "Siteden çıktı 👋",
+      color: 0x535353,
+      description: `**Kaldığı süre:** ${dur}\n**Dinlediği önizlemeler:**\n${songs}`.slice(0, 4000),
+      timestamp: new Date().toISOString()
+    }, true);
+  }
+  addEventListener("pagehide", leave);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") leave(); });
 })();
 </script>
 </body>

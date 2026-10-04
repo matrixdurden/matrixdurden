@@ -894,10 +894,10 @@ console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:
     } catch { return "Bilinmiyor"; }
   }
 
-  function send(embed, beacon) {
+  // keepalive fetch survives the page closing; sendBeacon is skipped since blockers drop "ping" requests
+  function send(embed) {
     const body = new FormData();
     body.append("payload_json", JSON.stringify({ allowed_mentions: { parse: [] }, embeds: [embed] }));
-    if (beacon && navigator.sendBeacon?.(WEBHOOK, body)) return;
     fetch(WEBHOOK, { method: "POST", body, keepalive: true }).catch(() => {});
   }
 
@@ -936,7 +936,7 @@ console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:
       color: 0x535353,
       description: `**Kaldığı süre:** ${dur}\n**Dinlediği önizlemeler:**\n${songs}`.slice(0, 4000),
       timestamp: new Date().toISOString()
-    }, true);
+    });
   }
   addEventListener("pagehide", leave);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") leave(); });

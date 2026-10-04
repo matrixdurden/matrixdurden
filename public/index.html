@@ -813,90 +813,75 @@ console.log("%cpsst... sayfada bir yere 'matrix' yaz 🐇", "color:#1ed760;font:
     sessionStorage.setItem("ziyaret", "1");
   } catch {}
 
-  const nav = navigator;
-  const scr = screen;
+  const ua = navigator.userAgent;
 
-  const info = {
-    url: location.href,
-    referrer: document.referrer || "Yok",
-    title: document.title,
+  const browser =
+    /Edg\//.test(ua) ? "Edge" :
+    /OPR\//.test(ua) ? "Opera" :
+    /SamsungBrowser/.test(ua) ? "Samsung Internet" :
+    /Firefox|FxiOS/.test(ua) ? "Firefox" :
+    /Chrome|CriOS/.test(ua) ? "Chrome" :
+    /Safari/.test(ua) ? "Safari" : "";
 
-    userAgent: nav.userAgent,
-    platform: nav.platform,
-    language: nav.language,
-    languages: nav.languages,
+  async function device() {
+    let model = "", os = "";
+    try {
+      const d = await navigator.userAgentData?.getHighEntropyValues(["model", "platformVersion"]);
+      if (d?.model) model = d.model;
+      if (d?.platform === "Android" && d.platformVersion) os = `Android ${parseInt(d.platformVersion)}`;
+    } catch {}
 
-    screen: `${scr.width}x${scr.height}`,
-    viewport: `${innerWidth}x${innerHeight}`,
-    pixelRatio: devicePixelRatio,
+    const android = ua.match(/Android ([\d.]+)(?:; ([^;)]+))?/);
+    const ios = ua.match(/(iPhone|iPad|iPod).*? OS (\d+)/);
 
-    colorDepth: scr.colorDepth,
-    touchPoints: nav.maxTouchPoints,
-    cpuThreads: nav.hardwareConcurrency ?? "Bilinmiyor",
-    ramGB: nav.deviceMemory ?? "Bilinmiyor",
+    if (android) {
+      os ||= `Android ${parseInt(android[1])}`;
+      const m = (android[2] || "").replace(/ Build\/.*/, "").trim();
+      if (!model && m && m !== "K") model = m;
+      return `${model || "Android telefon"} (${os})`;
+    }
+    if (ios) return `${ios[1]} (iOS ${ios[2]})`;
+    if (/Macintosh/.test(ua)) return navigator.maxTouchPoints > 1 ? "iPad" : "Mac";
+    if (/Windows/.test(ua)) return "Windows PC";
+    if (/CrOS/.test(ua)) return "Chromebook";
+    if (/Linux/.test(ua)) return "Linux PC";
+    return "Bilinmiyor";
+  }
 
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-
-    cookies: nav.cookieEnabled,
-    online: nav.onLine,
-
-    connection: nav.connection ? {
-      type: nav.connection.effectiveType,
-      downlink: nav.connection.downlink,
-      rtt: nav.connection.rtt,
-      saveData: nav.connection.saveData
-    } : "Desteklenmiyor",
-
-    date: new Date().toISOString()
+  const flag = cc => cc.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
+  const regionName = cc => {
+    try { return new Intl.DisplayNames(["tr"], { type: "region" }).of(cc); } catch { return cc; }
   };
 
-  const content =
-`Siteye 1 kişi girdi 👀
+  async function country() {
+    let cc = "";
+    try {
+      const r = await fetch("https://api.country.is/", { signal: AbortSignal.timeout(4000) });
+      cc = (await r.json()).country || "";
+    } catch {}
+    cc ||= (navigator.language.split("-")[1] || "");
+    return /^[A-Za-z]{2}$/.test(cc) ? `${flag(cc)} ${regionName(cc.toUpperCase())}` : "Bilinmiyor";
+  }
 
-Sayfa: <${info.url}>
-Başlık: ${info.title}
-Referrer: ${info.referrer}
+  Promise.all([device(), country()]).then(([dev, ctry]) => {
+    const body = new FormData();
+    body.append("payload_json", JSON.stringify({
+      allowed_mentions: { parse: [] },
+      embeds: [{
+        title: "Siteye biri girdi 👀",
+        color: 0x1ed760,
+        description: `**Cihaz:** ${dev}\n**Ülke:** ${ctry}`,
+        footer: browser ? { text: browser } : undefined,
+        timestamp: new Date().toISOString()
+      }]
+    }));
 
-Tarayıcı:
-${info.userAgent}
-
-Platform: ${info.platform}
-Dil: ${info.language}
-Diller: ${JSON.stringify(info.languages)}
-Saat dilimi: ${info.timezone}
-
-Ekran: ${info.screen}
-Viewport: ${info.viewport}
-Pixel ratio: ${info.pixelRatio}
-Color depth: ${info.colorDepth}
-
-CPU thread: ${info.cpuThreads}
-RAM: ${info.ramGB} GB
-Touch noktası: ${info.touchPoints}
-
-Cookies: ${info.cookies}
-Online: ${info.online}
-
-Bağlantı:
-${JSON.stringify(info.connection, null, 2)}
-
-Zaman: ${info.date}`;
-
-  const body = new FormData();
-
-  body.append(
-    "payload_json",
-    JSON.stringify({
-      content: content.slice(0, 2000),
-      allowed_mentions: { parse: [] }
-    })
-  );
-
-  fetch("https://discord.com/api/webhooks/1554106935693811772/9Mb_xlMBjA3YnemDt9u1a20Buo0oUjsfMHfrNpgwneQfOk4YZNyuA-RnYEQgG__Jaygz", {
-    method: "POST",
-    body,
-    keepalive: true
-  }).catch(() => {});
+    fetch("https://discord.com/api/webhooks/1554106935693811772/9Mb_xlMBjA3YnemDt9u1a20Buo0oUjsfMHfrNpgwneQfOk4YZNyuA-RnYEQgG__Jaygz", {
+      method: "POST",
+      body,
+      keepalive: true
+    }).catch(() => {});
+  });
 })();
 </script>
 </body>

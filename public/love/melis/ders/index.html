@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff4f7">
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Pembe Ders Defteri</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: tek sütun, telefon öncelikli defter. Ana sayfa = konu kartları; konu sayfası = fikir → bilgi kartları → birlikte çözelim → sıra sende → Muhammet'in notu */
+:root{
+  --bg:#fff4f7;
+  --bg2:#ffe6ee;
+  --surface:#ffffff;
+  --ink:#4a2338;
+  --muted:#8c6378;
+  --accent:#e8578a;
+  --accent-ink:#ffffff;
+  --soft:#ffdbe7;
+  --line:#f6cfdc;
+  --note:#fff8d9;
+  --note-ink:#5a3a2a;
+  --good:#2f9a74;
+  --good-soft:#dcf3e9;
+  --warn-soft:#fff0d6;
+  --font-display:"Baloo 2","Nunito",system-ui,sans-serif;
+  --font-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-hand:"Caveat","Comic Sans MS","Segoe Print",cursive;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#211019;--bg2:#2c1522;--surface:#2f1925;--ink:#fbe7ef;--muted:#cfa2b6;
+    --accent:#ff86ad;--accent-ink:#2a0f1b;--soft:#4a2335;--line:#45283a;
+    --note:#3b2f22;--note-ink:#fbe9cf;--good:#6fd6ac;--good-soft:#1d3a2f;--warn-soft:#3d2f1b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#211019;--bg2:#2c1522;--surface:#2f1925;--ink:#fbe7ef;--muted:#cfa2b6;
+  --accent:#ff86ad;--accent-ink:#2a0f1b;--soft:#4a2335;--line:#45283a;
+  --note:#3b2f22;--note-ink:#fbe9cf;--good:#6fd6ac;--good-soft:#1d3a2f;--warn-soft:#3d2f1b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(circle at 15% -10%,var(--bg2) 0,transparent 55%),radial-gradient(circle at 110% 30%,var(--bg2) 0,transparent 40%);
+  background-attachment:fixed;
+  color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.55;
+}
+.wrap{max-width:580px;margin:0 auto;padding-block:18px 96px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:2.1rem;font-weight:800}
+h2{font-size:1.45rem;font-weight:800}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0}
+b{font-weight:800}
+.small{font-size:.88rem;color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* üst kısım */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-weight:800;font-size:1.05rem;color:var(--accent);letter-spacing:.02em}
+.pill{border:0;background:var(--soft);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:700;font-size:.92rem}
+.pill:active{transform:scale(.97)}
+
+/* Muhammet'in notu */
+.note{background:var(--note);color:var(--note-ink);font-family:var(--font-hand);font-size:1.5rem;line-height:1.25;
+  padding:26px 20px 18px;border-radius:6px 22px 6px 22px;position:relative;transform:rotate(-.8deg);
+  box-shadow:0 6px 18px -10px rgba(120,40,70,.35)}
+.note::before{content:"";position:absolute;top:-10px;left:50%;width:84px;height:22px;margin-left:-42px;
+  background:var(--soft);opacity:.85;transform:rotate(2deg);border-radius:3px}
+.note .sig{display:block;text-align:right;margin-top:6px;font-size:1.35rem}
+.note.locked{transform:none;font-family:var(--font-body);font-size:1rem;text-align:center;color:var(--muted);background:var(--surface);border:2px dashed var(--line);box-shadow:none}
+.note.locked::before{display:none}
+.note.pop{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.85) rotate(-3deg);opacity:0}70%{transform:scale(1.03) rotate(0)}100%{transform:rotate(-.8deg);opacity:1}}
+
+/* ilerleme */
+.prog{display:flex;flex-direction:column;gap:8px}
+.bar{height:12px;background:var(--soft);border-radius:999px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .4s ease}
+.prog .row{display:flex;justify-content:space-between;font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
+
+/* konu listesi */
+.group{display:flex;flex-direction:column;gap:10px}
+.group-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.group-h .small{font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+.tcard{border:0;text-align:left;background:var(--surface);border-radius:20px;padding:14px 14px 12px;
+  display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;box-shadow:0 2px 0 var(--line);min-width:0}
+.tcard:active{transform:scale(.98)}
+.tcard .em{grid-row:span 2;font-size:1.9rem;width:48px;height:48px;border-radius:16px;background:var(--soft);display:grid;place-items:center}
+.tcard .tt{font-family:var(--font-display);font-weight:800;font-size:1.12rem;line-height:1.1;min-width:0}
+.tcard .ts{font-size:.85rem;color:var(--muted);min-width:0}
+.tcard .hearts{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted);margin-top:4px}
+.tcard .hearts span:last-child{letter-spacing:2px;font-size:.95rem;color:var(--accent)}
+.tag{display:inline-block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+
+/* konu sayfası */
+.back{align-self:flex-start}
+.hero{display:flex;flex-direction:column;gap:6px}
+.hero .em{font-size:2.6rem;line-height:1}
+.idea{background:var(--accent);color:var(--accent-ink);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.idea .big{font-family:var(--font-display);font-size:1.45rem;font-weight:700;line-height:1.2}
+.idea p:last-child{opacity:.95}
+.sec-h{display:flex;align-items:center;gap:10px;margin-top:6px}
+.sec-h .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-family:var(--font-display);font-weight:800;color:var(--accent)}
+.know{display:flex;flex-direction:column;gap:10px}
+.kcard{background:var(--surface);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 2px 0 var(--line);min-width:0}
+.kcard ol{margin:0;padding-left:1.3em}
+.f{display:block;background:var(--soft);border-radius:14px;padding:10px 12px;margin:2px 0;text-align:center;font-weight:800;font-size:1.05rem;overflow-x:auto;font-variant-numeric:tabular-nums}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .15em;font-size:.92em}
+.fr>span:first-child{border-bottom:2px solid currentColor;padding:0 .25em 1px}
+.fr>span:last-child{padding:1px .25em 0}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.95rem}
+.tbl th,.tbl td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
+.tbl th{font-weight:800;color:var(--muted);font-size:.85rem}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+svg.tri{width:100%;max-width:300px;height:auto;margin:0 auto;display:block}
+svg.tri .ln{fill:none;stroke:var(--accent);stroke-width:4;stroke-linejoin:round}
+svg.tri .sq{fill:none;stroke:var(--muted);stroke-width:2}
+svg.tri text{fill:var(--ink);font-family:var(--font-body);font-weight:800;font-size:15px}
+svg.tri text.x{fill:var(--accent);font-size:18px}
+
+.ex{background:var(--surface);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 0 var(--line)}
+.ex .q{font-weight:700}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;animation:fadein .35s ease}
+.steps li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--accent);font-weight:800;display:grid;place-items:center;font-size:.9rem}
+@keyframes fadein{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;background:var(--accent);color:var(--accent-ink);min-height:46px}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.55;cursor:default;transform:none}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn.good{background:var(--good);color:var(--surface)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns .btn{flex:1 1 140px}
+
+.qcard{background:var(--surface);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 0 var(--line);border:2px solid transparent;transition:border-color .3s}
+.qcard.ok{border-color:var(--good)}
+.qcard .lvl{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.qcard .q{font-weight:700}
+.hint{background:var(--warn-soft);border-radius:14px;padding:10px 12px;font-size:.95rem}
+.ans{background:var(--good-soft);border-radius:14px;padding:10px 12px}
+.mark{display:flex;gap:8px;flex-wrap:wrap}
+.mark .btn{flex:1 1 140px;min-height:42px;padding:9px 12px;font-size:.95rem}
+.mark .btn.sel{outline:3px solid var(--ink);outline-offset:1px}
+.cheer{font-size:.92rem;color:var(--muted);font-weight:700}
+
+.next{margin-top:4px}
+.foot{text-align:center;font-family:var(--font-hand);font-size:1.35rem;color:var(--muted);margin-top:10px}
+
+/* kalp patlaması + toast */
+.heart{position:fixed;left:0;top:0;pointer-events:none;font-size:22px;z-index:50;animation:fly 1s ease-out forwards}
+@keyframes fly{from{transform:translate(var(--x0),var(--y0)) scale(.6);opacity:1}to{transform:translate(var(--x1),var(--y1)) scale(1.2);opacity:0}}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  width:min(520px,calc(100% - 32px));background:var(--note);color:var(--note-ink);font-family:var(--font-hand);font-size:1.45rem;line-height:1.25;
+  padding:14px 18px;border-radius:18px;box-shadow:0 12px 30px -10px rgba(90,20,50,.45);z-index:40;text-align:center}
+.toast[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){
+  .heart{display:none}
+  .note.pop,.steps li{animation:none}
+  .bar>i{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const fr=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+
+const TRI=`<svg class="tri" viewBox="0 0 240 150" role="img" aria-label="Dik üçgen: x açısının karşısı, komşusu ve hipotenüs">
+<polygon class="ln" points="30,125 200,125 200,30"/>
+<polyline class="sq" points="186,125 186,111 200,111"/>
+<text class="x" x="52" y="119">x</text>
+<text x="88" y="145">komşu</text>
+<text x="207" y="83">karşı</text>
+<text x="78" y="68" transform="rotate(-29 110 75)">hipotenüs</text>
+</svg>`;
+
+const T=[
+{id:"mol",ders:"Kimya",em:"🧪",title:"Mol",sub:"Atomları paket paket saymak",exam:true,
+ idea:`Mol, kimyacının <b>düzine</b>si.`,
+ analogy:`Yumurtayı tek tek değil düzine düzine sayarız: 1 düzine = 12 tane. Atomlar çok küçük, onları da paket paket sayarız: <b>1 mol = 6,02·10²³ tane</b>.`,
+ know:[
+  {h:"Pakette kaç tane var?",b:`<span class="f">1 mol = 6,02·10²³ tane</span>Bu sayının adı <b>Avogadro sayısı</b>. Her soruda lazım, ezberle.`},
+  {h:"1 paket kaç gram?",b:`Formüldeki atomların kütlelerini topla. Buna <b>mol kütlesi</b> denir.<span class="f">H₂O = 1 + 1 + 16 = 18 g</span><span class="small">H = 1 · C = 12 · N = 14 · O = 16 · Mg = 24 · S = 32 · Ca = 40</span>`},
+  {h:"Altın kural: önce mole çevir 💡",b:`Soru ne verirse versin, önce mole çevir, sonra istenene geç.<span class="f">mol = ${fr("gram","mol kütlesi")}</span><span class="f">mol = ${fr("tane","6,02·10²³")}</span><span class="f">mol = ${fr("litre","22,4")}</span><span class="small">22,4 sadece gazlar için, normal koşullarda (0 °C).</span>`},
+  {h:"Formülü okumak",b:`H₂O'da 2 H + 1 O var, yani her molekülde <b>3 atom</b>. 1 mol H₂O içinde 3 mol atom vardır.`}
+ ],
+ ex:{q:"8,8 gram CO₂ kaç mol? Kaç tane molekül?",steps:[
+  `CO₂'nin 1 molü kaç gram? 12 + 16 + 16 = <b>44 g</b>`,
+  `Mole çevir: 8,8 ÷ 44 = <b>0,2 mol</b>`,
+  `Taneye çevir: 0,2 × 6,02·10²³ = <b>1,204·10²³ tane</b>`,
+  `Bonus: gaz olduğu için hacmi de bulunur: 0,2 × 22,4 = <b>4,48 L</b> 🎉`]},
+ qs:[
+  {l:"Kolay",q:`36 gram su (H₂O) kaç mol?`,h:`Suyun 1 molü 18 gram.`,a:`36 ÷ 18 = <b>2 mol</b>`},
+  {l:"Orta",q:`Normal koşullarda 11,2 L O₂ gazı kaç mol? Kaç gram?`,h:`Önce 22,4'e böl. O₂'nin 1 molü 16 + 16 = 32 g.`,a:`11,2 ÷ 22,4 = <b>0,5 mol</b><br>0,5 × 32 = <b>16 g</b>`},
+  {l:"Biraz zor",q:`Elif çayına 18 g glikoz (C₆H₁₂O₆) attı. Kaç tane glikoz molekülü attı?`,h:`Mol kütlesi: 6·12 + 12·1 + 6·16. Sonra mole, sonra taneye çevir.`,a:`72 + 12 + 96 = 180 g<br>18 ÷ 180 = 0,1 mol<br>0,1 × 6,02·10²³ = <b>6,02·10²² tane</b>`}
+ ],
+ note:`Bir molde 6,02·10²³ tane atom var. Benim aklımda ise sadece bir tane sen varsın. 💗`},
+
+{id:"trig",ders:"Matematik",em:"📐",title:"Trigonometri",sub:"Dik üçgende kenar oranları",exam:true,
+ idea:`Dik üçgende bir açıya bakıp <b>kenarları birbirine bölüyoruz</b>.`,
+ analogy:`Açıya göre kenarların üç adı var: <b>karşı</b> (açının tam karşısı), <b>komşu</b> (açıya yapışık), <b>hipotenüs</b> (en uzun kenar, dik açının karşısı).`,
+ know:[
+  {h:"Üç oran",b:`${TRI}<span class="f">sin x = ${fr("karşı","hipotenüs")}</span><span class="f">cos x = ${fr("komşu","hipotenüs")}</span><span class="f">tan x = ${fr("karşı","komşu")}</span><span class="small">Hile: <b>C</b>os ile <b>K</b>omşu aynı sesle başlar.</span>`},
+  {h:"Tek ezber formül",b:`<span class="f">sin²x + cos²x = 1</span>Birini biliyorsan diğerini bulursun.`},
+  {h:"Özel açılar",b:`<div class="tbl"><table><tr><th></th><th>30°</th><th>45°</th><th>60°</th></tr><tr><td><b>sin</b></td><td>1/2</td><td>√2/2</td><td>√3/2</td></tr><tr><td><b>cos</b></td><td>√3/2</td><td>√2/2</td><td>1/2</td></tr><tr><td><b>tan</b></td><td>√3/3</td><td>1</td><td>√3</td></tr></table></div><span class="small">sin satırı √1/2, √2/2, √3/2 diye artar. cos aynı sayıları tersten söyler.</span>`},
+  {h:"Sık çıkan üçgenler",b:`<b>3-4-5</b> ve <b>5-12-13</b> dik üçgenleri. İki kenarı görünce üçüncüsünü hemen yaz.`}
+ ],
+ ex:{q:"x dar açı ve sin x = 3/5. cos x ve tan x kaç?",steps:[
+  `sin = karşı / hipotenüs → karşı = 3, hipotenüs = 5`,
+  `Komşu kenar: 5² − 3² = 25 − 9 = 16 → <b>4</b> (3-4-5 üçgeni!)`,
+  `cos x = komşu / hipotenüs = <b>4/5</b>`,
+  `tan x = karşı / komşu = <b>3/4</b> 🎉`]},
+ qs:[
+  {l:"Kolay",q:`sin 30° + cos 60° kaçtır?`,h:`Tabloya bak: ikisi de aynı sayı.`,a:`1/2 + 1/2 = <b>1</b>`},
+  {l:"Orta",q:`x dar açı ve cos x = 5/13. sin x ve tan x kaç?`,h:`5-12-13 üçgeni.`,a:`Karşı kenar 12 → sin x = <b>12/13</b>, tan x = <b>12/5</b>`},
+  {l:"Biraz zor",q:`4 metrelik bir merdiven, yerle 60° açı yapacak şekilde duvara dayanmış. Merdivenin ayağı duvardan kaç metre uzakta?`,h:`Merdiven hipotenüs. Aradığın uzaklık 60°'nin komşusu. cos kullan.`,a:`cos 60° = uzaklık / 4<br>1/2 = uzaklık / 4 → <b>2 metre</b>`}
+ ],
+ note:`sin²x + cos²x = 1. Sen + ben = 1. Matematik bile bizden yana. 💕`},
+
+{id:"ucgen",ders:"Matematik",em:"🔺",title:"Üçgen",sub:"Özel çizgiler, alan, sin-cos teoremi",exam:true,
+ idea:`Üçgenin içine çizilen <b>özel çizgiler</b> var ve alanı bulmanın <b>birden fazla yolu</b> var.`,
+ analogy:`Her çizginin bir kuralı var. Kuralı bilirsen soru tek satırda biter.`,
+ know:[
+  {h:"Kenarortay",b:`Köşeyi karşı kenarın <b>ortasına</b> bağlar. Üç kenarortay <b>G</b> noktasında buluşur. G, kenarortayı <b>2'ye 1</b> böler; uzun parça köşe tarafındadır.<span class="f">AG = 2 · GD</span>`},
+  {h:"Açıortay",b:`Açıyı iki eşit parçaya böler. Karşı kenarı, yanındaki kenarlar oranında böler.<span class="f">${fr("BD","DC")} = ${fr("AB","AC")}</span>`},
+  {h:"Alan",b:`<span class="f">Alan = ${fr("taban × yükseklik","2")}</span><span class="f">Alan = ${fr("1","2")} · b · c · sin A</span>İkinci formül: iki kenar ve <b>aralarındaki açı</b> verilince.`},
+  {h:"Sinüs ve kosinüs teoremi",b:`Küçük harf kenar, büyük harf onun karşısındaki açı.<span class="f">a² = b² + c² − 2bc · cos A</span><span class="f">${fr("a","sin A")} = 2R</span><span class="small">İki kenar + aradaki açı → kosinüs. Kenar ve karşısındaki açı → sinüs.</span>`}
+ ],
+ ex:{q:"ABC üçgeninde b = 4, c = 6 ve A = 60°. a kenarı ve alan kaç?",steps:[
+  `İki kenar + aradaki açı var → <b>kosinüs teoremi</b>`,
+  `a² = 16 + 36 − 2·4·6·(1/2) = 52 − 24 = 28`,
+  `a = √28 = <b>2√7</b>`,
+  `Alan = (1/2) · 4 · 6 · sin 60° = 12 · √3/2 = <b>6√3</b> 🎉`]},
+ qs:[
+  {l:"Kolay",q:`G ağırlık merkezi ve AD kenarortayı 12 cm. AG kaç cm?`,h:`G kenarortayı 2'ye 1 böler. 12'yi 3 parçaya ayır.`,a:`12 ÷ 3 = 4 → AG = 2 parça = <b>8 cm</b>, GD = 4 cm`},
+  {l:"Orta",q:`AB = 6, AC = 9, BC = 10 ve AD açıortay. BD kaç?`,h:`BD/DC = 6/9 = 2/3. 10'u 2'ye 3 oranında böl.`,a:`10 ÷ 5 = 2 → BD = 2 · 2 = <b>4</b>`},
+  {l:"Biraz zor",q:`AB = 5, AC = 8 ve A = 60°. BC kaç? Alan kaç?`,h:`Kosinüs teoremi. cos 60° = 1/2.`,a:`BC² = 25 + 64 − 40 = 49 → BC = <b>7</b><br>Alan = (1/2) · 5 · 8 · (√3/2) = <b>10√3</b>`}
+ ],
+ note:`Üçgenin ağırlık merkezi G. Benim ağırlık merkezim ise sensin. 🌸`},
+
+{id:"tablo",ders:"Matematik",em:"📊",title:"İki Yönlü Tablo",sub:"İki soru arasında ilişki var mı?",exam:true,
+ idea:`İki soruyu aynı tabloda topluyoruz ve <b>aralarında ilişki var mı</b> diye bakıyoruz.`,
+ analogy:`120 kişiye "Kahvaltı yapıyor musun?" ve "Derste odaklanıyor musun?" diye sorduk. Kahvaltı ile odaklanma birlikte mi görülüyor?`,
+ know:[
+  {h:"Tabloyu oku",b:`<div class="tbl"><table><tr><th></th><th>Odaklanıyor</th><th>Odaklanamıyor</th><th>Toplam</th></tr><tr><td>Kahvaltı yapan</td><td>60</td><td>20</td><td><b>80</b></td></tr><tr><td>Yapmayan</td><td>15</td><td>25</td><td><b>40</b></td></tr><tr><td><b>Toplam</b></td><td><b>75</b></td><td><b>45</b></td><td><b>120</b></td></tr></table></div>`},
+  {h:"Altın kural: yüzdeye bak",b:`Gruplar farklı büyüklükte olabilir. O yüzden sayıyı değil <b>yüzdeyi</b> karşılaştır. Her satırı kendi toplamına böl.`},
+  {h:"Karar",b:`Yüzdeler <b>yakınsa</b> → ilişki yok.<br>Yüzdeler <b>çok farklıysa</b> → ilişki var.<br><span class="small">Ama ilişki "sebep" demek değil. "Birlikte görülüyor" deriz.</span>`},
+  {h:"Başkasının verisine şüpheyle bak",b:`Kaç kişiye sorulmuş? Kimlere sorulmuş? Sayı mı verilmiş, yüzde mi?`}
+ ],
+ ex:{q:"Tabloya göre kahvaltı ile odaklanma arasında ilişki var mı?",steps:[
+  `Kahvaltı yapanlar: 60 ÷ 80 = <b>%75</b> odaklanıyor`,
+  `Yapmayanlar: 15 ÷ 40 = <b>%37,5</b> odaklanıyor`,
+  `Yüzdeler çok farklı → <b>ilişki var</b>`,
+  `Cevaba bir cümle ekle: "Ama bu veri, kahvaltının sebep olduğunu göstermez." 🎉`]},
+ qs:[
+  {l:"Kolay",q:`Tabloya göre kahvaltı yapmayanların yüzde kaçı odaklanamıyor?`,h:`Sadece "Yapmayan" satırına bak: 25 kişi, toplam 40.`,a:`25 ÷ 40 = <b>%62,5</b>`},
+  {l:"Orta",q:`9. sınıflardan 100 kişinin 30'u, 10. sınıflardan 150 kişinin 45'i kitap okuyor. Sınıf ile kitap okuma arasında ilişki var mı?`,h:`İki yüzdeyi hesapla ve karşılaştır.`,a:`30/100 = %30, 45/150 = %30<br>Yüzdeler aynı → <b>ilişki yok</b>`},
+  {l:"Biraz zor",q:`Bir haber: "Kızlar erkeklerden çok kitap okuyor: 40 kız, 30 erkek okuyor." Bu sonuca varmak için ne eksik?`,h:`Altın kuralı hatırla.`,a:`<b>Okuldaki toplam kız ve erkek sayısı.</b> Yüzde olmadan karşılaştırma yapılamaz. 100 kız, 50 erkek varsa kızların %40'ı, erkeklerin %60'ı okuyor demektir.`}
+ ],
+ note:`"İlişki var mı?" diye sordun ya… Bizimkinde var, hem de %100. 😌`},
+
+{id:"tepkime",ders:"Kimya",em:"⚗️",title:"Tepkime Hesapları",sub:"Denkleştirme ve hangisi biter?",exam:false,
+ idea:`Tepkime denklemi bir <b>tarif</b> gibi. Öndeki sayılar kaç <b>mol</b> kullanılacağını söyler.`,
+ analogy:`2H₂ + O₂ → 2H₂O demek: "2 mol hidrojen + 1 mol oksijen → 2 mol su".`,
+ know:[
+  {h:"Denkleştirme",b:`Okun iki tarafında her atomdan <b>aynı sayıda</b> olmalı. Sadece <b>öndeki sayıyı</b> değiştir, küçük sayılara asla dokunma.<span class="f">N₂ + 3H₂ → 2NH₃</span>`},
+  {h:"4 adım",b:`<ol><li>Denklemi denkleştir</li><li>Verileni mole çevir</li><li>Öndeki sayılarla oran kur</li><li>İstenen birime çevir</li></ol>`},
+  {h:"Hangisi biter?",b:`Kek tarifi 2 yumurta + 1 paket un istiyor. Elinde 6 yumurta, 1 paket un var. Un biter, yumurta artar. Biten maddeye <b>sınırlayıcı bileşen</b> denir.<span class="f">${fr("mol","öndeki sayı")} → küçük olan biter</span>`},
+  {h:"Verim",b:`<span class="f">Verim = ${fr("elde edilen","hesaplanan")} × 100</span>`}
+ ],
+ ex:{q:"N₂ + 3H₂ → 2NH₃. 6 g H₂ tamamen harcanırsa kaç g NH₃ oluşur?",steps:[
+  `H₂'yi mole çevir: 6 ÷ 2 = <b>3 mol</b>`,
+  `Tarif: 3 mol H₂ → 2 mol NH₃`,
+  `NH₃'ün 1 molü: 14 + 3 = 17 g`,
+  `2 × 17 = <b>34 g NH₃</b> 🎉`]},
+ qs:[
+  {l:"Kolay",q:`Denkleştir: Al + O₂ → Al₂O₃`,h:`O sayısını eşitle: solda 2'nin, sağda 3'ün katı. İkisinin ortağı 6.`,a:`<b>4Al + 3O₂ → 2Al₂O₃</b><br>Al: 4 = 4, O: 6 = 6`},
+  {l:"Orta",q:`Mg + 2HCl → MgCl₂ + H₂. 4,8 g Mg ile normal koşullarda kaç litre H₂ oluşur?`,h:`Mg = 24 g. 1 mol Mg → 1 mol H₂.`,a:`4,8 ÷ 24 = 0,2 mol Mg → 0,2 mol H₂<br>0,2 × 22,4 = <b>4,48 L</b>`},
+  {l:"Biraz zor",q:`2H₂ + O₂ → 2H₂O. 8 g H₂ ile 32 g O₂ karıştırılıyor. Hangisi biter, kaç g su oluşur?`,h:`İkisini de mole çevir, öndeki sayıya böl.`,a:`H₂: 4 mol ÷ 2 = 2 · O₂: 1 mol ÷ 1 = 1<br><b>O₂ biter.</b> 1 mol O₂ → 2 mol su = <b>36 g</b><br>4 g H₂ artar. Kontrol: 8 + 32 = 36 + 4 ✓`}
+ ],
+ note:`Sen + ben → mutluluk. Verim %100, artan madde yok. 💗`},
+
+{id:"sayilar",ders:"Matematik",em:"🔢",title:"Sayılar",sub:"Bölenler, EBOB, EKOK",exam:false,
+ idea:`Her sayı, asal sayılardan yapılmış bir <b>Lego</b> gibi.`,
+ analogy:`72'yi parçalara ayır: 72 = 2 · 2 · 2 · 3 · 3 = 2³ · 3². Bu parçalarla her şeyi bulursun.`,
+ know:[
+  {h:"Kaç böleni var?",b:`Üslerin hepsine 1 ekle, çarp.<span class="f">72 = 2³ · 3² → (3+1)(2+1) = 12</span>`},
+  {h:"EBOB",b:`Ortak parçaların <b>küçük</b> üslüleri. Sorudaki ipucu: "en büyük parça", "en büyük kare fayans".`},
+  {h:"EKOK",b:`Bütün parçaların <b>büyük</b> üslüleri. İpucu: "tekrar birlikte", "aynı anda".<span class="f">EBOB · EKOK = iki sayının çarpımı</span>`},
+  {h:"Bölünebilme",b:`<b>3 ve 9:</b> rakamları topla.<br><b>4:</b> son iki basamağa bak.<br><b>5:</b> son basamak 0 ya da 5.<br><b>Kalan:</b> "5'e bölümünden kalan 3" → sayı = 5k + 3`}
+ ],
+ ex:{q:"72 ve 60 için EBOB ve EKOK?",steps:[
+  `Parçala: 72 = 2³ · 3², 60 = 2² · 3 · 5`,
+  `EBOB: ortaklar, küçük üs → 2² · 3 = <b>12</b>`,
+  `EKOK: hepsi, büyük üs → 2³ · 3² · 5 = <b>360</b>`,
+  `Kontrol: 12 · 360 = 4320 = 72 · 60 ✓ 🎉`]},
+ qs:[
+  {l:"Kolay",q:`180'in kaç pozitif böleni var?`,h:`180 = 2² · 3² · 5`,a:`(2+1)(2+1)(1+1) = <b>18</b>`},
+  {l:"Orta",q:`24 cm × 36 cm'lik bir alan, en büyük eş kare fayanslarla boşluksuz döşenecek. Kaç fayans gerekir?`,h:`"En büyük kare" → EBOB.`,a:`EBOB(24, 36) = 12 cm<br>(24 ÷ 12) · (36 ÷ 12) = 2 · 3 = <b>6 fayans</b>`},
+  {l:"Biraz zor",q:`Üç basamaklı 4a7 sayısı 9 ile tam bölünüyor. a kaç?`,h:`Rakamlar toplamı 9'un katı olmalı.`,a:`4 + a + 7 = 11 + a = 18 → <b>a = 7</b>`}
+ ],
+ note:`EKOK bulmayı öğrendin. Tekrar birlikte olacağımız an hep çok yakın. 🌷`},
+
+{id:"fonksiyon",ders:"Matematik",em:"📈",title:"Fonksiyonlar",sub:"Parabol, kaydırma, ters fonksiyon",exam:false,
+ idea:`Fonksiyon bir <b>makine</b>: x girer, <b>tek bir</b> sonuç çıkar.`,
+ analogy:`Otomatta 1. düğmeye basınca hep aynı içecek gelir. Bir düğme iki farklı şey verirse makine bozuktur, fonksiyon değildir.`,
+ know:[
+  {h:"Parabol",b:`<span class="f">f(x) = a(x − r)² + k</span>Tepe noktası <b>(r, k)</b>. a artıysa kollar yukarı 🙂, eksiyse aşağı.`},
+  {h:"Kaydırma",b:`(x − 2) → <b>2 sağa</b> · (x + 2) → 2 sola<br>+3 → <b>3 yukarı</b> · −3 → 3 aşağı<br><span class="small">Parantezin içindeki işaret ters çalışır, dışarıdaki düz.</span>`},
+  {h:"Karekök ve kesirli",b:`√ içi negatif olamaz → <b>içi ≥ 0</b>.<br>Payda sıfır olamaz → orada bir <b>asimptot</b> var (grafiğin hiç değmediği çizgi).<span class="f">${fr("3","x − 2")} + 1 → x = 2 ve y = 1</span>`},
+  {h:"Ters fonksiyon",b:`Makineyi geri çalıştır: x'i yalnız bırak, sonra x ile y'yi değiştir.<span class="f">f(a) = b ⇔ f⁻¹(b) = a</span>`}
+ ],
+ ex:{q:"f(x) = 2x − 6 ise f⁻¹(x) nedir?",steps:[
+  `y = 2x − 6 yaz`,
+  `x'i yalnız bırak: y + 6 = 2x → x = (y + 6)/2`,
+  `x ile y'yi değiştir: <b>f⁻¹(x) = (x + 6)/2</b>`,
+  `Kontrol: f(5) = 4, f⁻¹(4) = 5 ✓ 🎉`]},
+ qs:[
+  {l:"Kolay",q:`f(x) = x² grafiği 2 birim sağa, 3 birim aşağı kaydırılırsa yeni fonksiyon ne olur?`,h:`Sağa → parantez içinde eksi. Aşağı → dışarıda eksi.`,a:`<b>f(x) = (x − 2)² − 3</b>`},
+  {l:"Orta",q:`f(x) = x² − 6x + 5 parabolünün tepe noktası nedir?`,h:`Tepenin x'i = −b/2a = 6/2.`,a:`x = 3, f(3) = 9 − 18 + 5 = −4 → <b>(3, −4)</b>`},
+  {l:"Biraz zor",q:`f(x) = (3x + 1)/2 ise f⁻¹(5) kaçtır?`,h:`f⁻¹(5) = a demek, f(a) = 5 demek.`,a:`(3a + 1)/2 = 5 → 3a + 1 = 10 → <b>a = 3</b>`}
+ ],
+ note:`Her x'in tek bir görüntüsü var. Benim tek görüntüm de sensin. 💌`},
+
+{id:"sayma",ders:"Matematik",em:"🎲",title:"Sayma",sub:"Kaç farklı yol var?",exam:false,
+ idea:`<b>VE</b> → çarp. <b>VEYA</b> → topla.`,
+ analogy:`3 gömleğin ve 2 pantolonun var. Bir gömlek <b>ve</b> bir pantolon → 3 · 2 = 6 kombin.`,
+ know:[
+  {h:"Kutu yöntemi",b:`Kaç basamak varsa o kadar kutu çiz. <b>Önce kuralı olan kutuyu</b> doldur (çift olacaksa son basamak). Sonra kutuları çarp.`},
+  {h:"Sıra önemli mi?",b:`Başkan + yardımcı, şifre, sıralama → <b>sıra önemli</b>: 5 · 4<br>Ekip, komite, grup → <b>sıra önemsiz</b>: 5 · 4 ÷ 2<span class="f">C(n, r) = ${fr("n!","r! · (n − r)!")}</span>`},
+  {h:"Tekrar eden harf",b:`"ANNE": 4 harf ama iki N aynı.<span class="f">${fr("4!","2!")} = 12</span>`},
+  {h:"Algoritma",b:`Algoritma bir tarif: adım adım, sırayla. "Sayıyı al, 2 ile çarp, 3 ekle" → f(x) = 2x + 3. <b>Tersine</b> gitmek için adımları tersten ve ters işlemle yap.`}
+ ],
+ ex:{q:"5 kişilik bir gruptan bir başkan ve bir yardımcı kaç farklı şekilde seçilir? Ya iki kişilik bir komite?",steps:[
+  `Başkan için 5 seçenek, yardımcı için kalan 4`,
+  `Sıra önemli → 5 · 4 = <b>20</b>`,
+  `Komitede sıra önemsiz: Ali-Ayşe ile Ayşe-Ali aynı komite`,
+  `20 ÷ 2 = <b>10</b> 🎉`]},
+ qs:[
+  {l:"Kolay",q:`1, 2, 3, 4, 5 rakamlarıyla, rakamları farklı kaç tane üç basamaklı sayı yazılır?`,h:`3 kutu: 5 · 4 · 3`,a:`<b>60</b>`},
+  {l:"Orta",q:`Aynı rakamlarla, rakamları farklı kaç tane üç basamaklı <b>çift</b> sayı yazılır?`,h:`Önce son kutu: 2 ya da 4.`,a:`Son: 2 yol · ilk: 4 · orta: 3 → <b>24</b>`},
+  {l:"Biraz zor",q:`Algoritma: "Sayıyı al, 3 çıkar, 4 ile çarp." Çıktı 20 ise girdi kaç?`,h:`Tersten git: 4'e böl, 3 ekle.`,a:`20 ÷ 4 = 5, 5 + 3 = <b>8</b>`}
+ ],
+ note:`Bütün olasılıkları tek tek saydım. Hepsinde seni seçtim. 🎲💗`},
+
+{id:"analitik",ders:"Matematik",em:"📍",title:"Analitik",sub:"Noktalar ve doğrular",exam:false,
+ idea:`Koordinat düzleminde her nokta bir <b>adres</b>: (x, y).`,
+ analogy:`x sağa-sola kaç adım, y yukarı-aşağı kaç adım. İki adres arasındaki mesafe aslında bir <b>Pisagor</b> sorusu.`,
+ know:[
+  {h:"İki nokta arası uzaklık",b:`<span class="f">|AB| = √(x farkı² + y farkı²)</span>`},
+  {h:"Orta nokta",b:`İki noktanın <b>ortalaması</b>.<span class="f">( ${fr("x₁ + x₂","2")} , ${fr("y₁ + y₂","2")} )</span>`},
+  {h:"Eğim",b:`Doğru ne kadar dik çıkıyor?<span class="f">m = ${fr("y farkı","x farkı")}</span>Artı eğim yukarı çıkar ↗, eksi eğim aşağı iner ↘.<br><b>Paralel:</b> eğimler eşit. <b>Dik:</b> eğimlerin çarpımı −1.`},
+  {h:"Doğru denklemi",b:`Bir nokta + eğim yeter:<span class="f">y − y₁ = m(x − x₁)</span>`}
+ ],
+ ex:{q:"A(1, 2) ve B(4, 6) için uzaklık, orta nokta ve eğim?",steps:[
+  `x farkı 3, y farkı 4`,
+  `Uzaklık: √(9 + 16) = √25 = <b>5</b>`,
+  `Orta nokta: ((1 + 4)/2, (2 + 6)/2) = <b>(5/2, 4)</b>`,
+  `Eğim: 4 ÷ 3 = <b>4/3</b> 🎉`]},
+ qs:[
+  {l:"Kolay",q:`A(−2, 1) ve B(4, 9) arası uzaklık kaç?`,h:`x farkı 6, y farkı 8.`,a:`√(36 + 64) = √100 = <b>10</b>`},
+  {l:"Orta",q:`(2, 3) noktasından geçen, eğimi −2 olan doğrunun denklemi nedir?`,h:`y − 3 = −2(x − 2)`,a:`y − 3 = −2x + 4 → <b>y = −2x + 7</b>`},
+  {l:"Biraz zor",q:`2x + 3y = 12 doğrusu eksenleri nerede keser? Eksenlerle yaptığı üçgenin alanı kaç?`,h:`Önce x = 0 koy, sonra y = 0 koy.`,a:`x = 0 → y = 4 · y = 0 → x = 6<br>(6, 0) ve (0, 4) → alan = 6 · 4 ÷ 2 = <b>12</b>`}
+ ],
+ note:`İki nokta arasındaki en kısa yol düz bir çizgi. Benim bütün yollarım da dümdüz sana çıkıyor. 📍`},
+
+{id:"olasilik",ders:"Matematik",em:"🍀",title:"Olasılık",sub:"Koşullu olasılık ve Bayes",exam:false,
+ idea:`Soruda "<b>biliniyorsa</b>" görünce, sadece o grubun içine bak.`,
+ analogy:`Sınıfta 30 kişi var. "Gözlüklü olduğu biliniyor" denirse artık 30 kişiye bakmazsın; sadece gözlüklülere bakarsın.`,
+ know:[
+  {h:"Koşullu olasılık",b:`<span class="f">P(A | B) = ${fr("hem A hem B olanlar","B olanlar")}</span>`},
+  {h:"Bayes: 1000 kişi düşün",b:`Yüzdeleri formüle koymak yerine 1000 kişiye çevir, küçük bir tablo yap, sonra böl. Çok daha kolay.`},
+  {h:"Ağaç çiz",b:`Önce ilk olay (hangi torba?), sonra ikinci olay (hangi renk?). Dallar boyunca <b>çarp</b>, istenen dalları <b>topla</b>.`}
+ ],
+ ex:{q:"Bir hastalık kişilerin %2'sinde var. Test hastalarda %90 pozitif çıkıyor, sağlıklılarda %10 yanlışlıkla pozitif çıkıyor. Testi pozitif çıkan biri gerçekten hasta mı?",steps:[
+  `1000 kişi düşün: 20 hasta, 980 sağlıklı`,
+  `Hastalardan pozitif: 20'nin %90'ı = 18`,
+  `Sağlıklılardan pozitif: 980'in %10'u = 98`,
+  `Pozitif çıkan 116 kişinin 18'i hasta → 18/116 ≈ <b>%15,5</b>. Şaşırtıcı ama doğru! 🎉`]},
+ qs:[
+  {l:"Kolay",q:`Bir zar atılıyor. Çift geldiği biliniyorsa 4'ten büyük olma olasılığı kaç?`,h:`Çiftler: 2, 4, 6. Bunlardan hangisi 4'ten büyük?`,a:`Sadece 6 → <b>1/3</b>`},
+  {l:"Orta",q:`9. sınıflardan 30, 10. sınıflardan 45 kişi kitap okuyor. Kitap okuyan biri seçildi. 10. sınıf olma olasılığı kaç?`,h:`Sadece kitap okuyanlara bak: 30 + 45 = 75.`,a:`45 ÷ 75 = <b>3/5</b>`},
+  {l:"Biraz zor",q:`I. torba: 3 kırmızı, 2 mavi. II. torba: 1 kırmızı, 4 mavi. Para atılıyor: yazı → I, tura → II. Çekilen top kırmızı. I. torbadan gelmiş olma olasılığı kaç?`,h:`Kırmızı gelme: (1/2)·(3/5) + (1/2)·(1/5)`,a:`Kırmızı: 3/10 + 1/10 = 4/10<br>I'den kırmızı: 3/10<br>(3/10) ÷ (4/10) = <b>3/4</b>`}
+ ],
+ note:`Seni sevme olasılığım: 1. Koşulsuz. 🍀💗`}
+];
+
+const MORAL=[
+ "Yoruldun mu? Bir bardak su iç, 5 dakika ara ver, sonra devam. 💧",
+ "Yanlış yapmak öğrenmenin parçası. Ben sana inanıyorum. 💗",
+ "Bir soru daha, sonra beni düşünerek bir çikolata ye. 🍫",
+ "Sen bu sınavı da halledersin, hep hallediyorsun. 💪",
+ "Şu an seni düşünüyorum. Aslında hep düşünüyorum. 💭",
+ "Çalışırken bile çok tatlısın, biliyor musun? 🌸",
+ "Bitince bana yaz, seninle gurur duyacağım. 💌"
+];
+
+const KEY="pembe-ders-defteri-v1";
+let P={};
+try{P=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){P={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}};
+const okCount=id=>{const t=P[id]||{};return Object.values(t).filter(v=>v==="ok").length};
+const doneCount=id=>Object.keys(P[id]||{}).length;
+const totalQ=T.reduce((s,t)=>s+t.qs.length,0);
+const totalOk=()=>T.reduce((s,t)=>s+okCount(t.id),0);
+
+const app=document.getElementById("app");
+const toastEl=document.getElementById("toast");
+let toastTimer;
+function toast(msg){
+  toastEl.innerHTML=msg+'<span style="display:block;font-size:1.1rem;margin-top:2px">— Muhammet</span>';
+  toastEl.hidden=false;clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{toastEl.hidden=true},4200);
+}
+toastEl.addEventListener("click",()=>{toastEl.hidden=true});
+let moralIdx=Math.floor(Math.random()*MORAL.length);
+function moral(){moralIdx=(moralIdx+1)%MORAL.length;toast(MORAL[moralIdx])}
+
+function burst(el){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const r=el.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const icons=["💗","💖","💕","🌸"];
+  for(let i=0;i<10;i++){
+    const h=document.createElement("span");h.className="heart";h.textContent=icons[i%icons.length];
+    const a=Math.random()*Math.PI*2,d=60+Math.random()*70;
+    h.style.setProperty("--x0",(cx-11)+"px");h.style.setProperty("--y0",(cy-11)+"px");
+    h.style.setProperty("--x1",(cx-11+Math.cos(a)*d)+"px");h.style.setProperty("--y1",(cy-11+Math.sin(a)*d-40)+"px");
+    document.body.appendChild(h);setTimeout(()=>h.remove(),1050);
+  }
+}
+
+function heartsFor(t){
+  const ok=okCount(t.id);return "♥".repeat(ok)+"♡".repeat(t.qs.length-ok);
+}
+function card(t){
+  return `<button class="tcard" data-open="${t.id}">
+    <span class="em" aria-hidden="true">${t.em}</span>
+    <span class="tt">${t.title}</span>
+    <span class="ts">${t.sub}</span>
+    <span class="hearts"><span class="tag">${t.ders}</span><span aria-label="${okCount(t.id)} / ${t.qs.length} soru">${heartsFor(t)}</span></span>
+  </button>`;
+}
+
+function home(){
+  const ok=totalOk();const pct=Math.round(ok/totalQ*100);
+  app.innerHTML=`
+  <div class="top"><span class="brand">Pembe Ders Defteri</span><button class="pill" id="moral">Moral lazım 💌</button></div>
+  <div class="note">Selam Melis 💗 Bugün biraz birlikte çalışalım mı? Konular küçük küçük, sorular kolaydan zora. Her konunun sonunda sana bir notum var. Ben hep yanındayım.<span class="sig">— Muhammet</span></div>
+  <div class="prog"><div class="row"><span>Bildiğin sorular</span><span>${ok} / ${totalQ} ♥</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>
+  <section class="group"><div class="group-h"><h2>Önce bunlar</h2><span class="small">1. yazılıda çıkıyor</span></div>
+    <div class="grid">${T.filter(t=>t.exam).map(card).join("")}</div></section>
+  <section class="group"><div class="group-h"><h2>Sonra bunlar</h2><span class="small">dönem içinde gelecek</span></div>
+    <div class="grid">${T.filter(t=>!t.exam).map(card).join("")}</div></section>
+  <p class="foot">Muhammet'ten sevgiyle 💗</p>`;
+  document.getElementById("moral").onclick=moral;
+  app.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openTopic(b.dataset.open));
+}
+
+function noteHTML(t){
+  const done=doneCount(t.id)>=t.qs.length;
+  if(!done) return `<div class="note locked" id="note">🔒 3 soruyu bitirince Muhammet'in notu açılacak.</div>`;
+  return `<div class="note" id="note">${t.note}<span class="sig">— Muhammet</span></div>`;
+}
+
+function qHTML(t,q,i){
+  const st=(P[t.id]||{})[i];
+  return `<div class="qcard${st==="ok"?" ok":""}" data-q="${i}">
+    <span class="lvl">${i+1}. soru · ${q.l}</span>
+    <p class="q">${q.q}</p>
+    <div class="btns">
+      <button class="btn ghost" data-act="hint">İpucu 💡</button>
+      <button class="btn" data-act="ans"${st?" hidden":""}>Cevabı göster</button>
+    </div>
+    <div class="hint" hidden>${q.h}</div>
+    <div class="ans"${st?"":" hidden"}>${q.a}</div>
+    <div class="mark"${st?"":" hidden"}>
+      <button class="btn good${st==="ok"?" sel":""}" data-act="ok">Bildim 💗</button>
+      <button class="btn ghost${st==="again"?" sel":""}" data-act="again">Tekrar bakacağım</button>
+    </div>
+    <p class="cheer"${st==="again"?"":" hidden"}>Sorun değil, ipucuna bir daha bak. Yarın tekrar dene 🌷</p>
+  </div>`;
+}
+
+function openTopic(id){
+  const i=T.findIndex(t=>t.id===id);if(i<0)return home();
+  const t=T[i];const nx=T[(i+1)%T.length];
+  app.innerHTML=`
+  <button class="pill back" id="back">← Konular</button>
+  <div class="hero"><span class="em" aria-hidden="true">${t.em}</span><span class="tag">${t.ders}${t.exam?" · 1. yazılıda var":""}</span><h1>${t.title}</h1></div>
+  <div class="idea"><p class="big">${t.idea}</p><p>${t.analogy}</p></div>
+
+  <div class="sec-h"><span class="num">1</span><h2>Bilmen gerekenler</h2></div>
+  <div class="know">${t.know.map(k=>`<div class="kcard"><h3>${k.h}</h3><div>${k.b}</div></div>`).join("")}</div>
+
+  <div class="sec-h"><span class="num">2</span><h2>Birlikte çözelim</h2></div>
+  <div class="ex"><p class="q">${t.ex.q}</p>
+    <ol class="steps" id="steps">${t.ex.steps.map((s,j)=>`<li${j?" hidden":""}><span>${s}</span></li>`).join("")}</ol>
+    <button class="btn" id="nextStep">Sonraki adım →</button></div>
+
+  <div class="sec-h"><span class="num">3</span><h2>Sıra sende</h2></div>
+  ${t.qs.map((q,j)=>qHTML(t,q,j)).join("")}
+
+  ${noteHTML(t)}
+  <button class="btn ghost next" id="nextTopic">Sıradaki konu: ${nx.em} ${nx.title} →</button>
+  <p class="foot">Muhammet'ten sevgiyle 💗</p>`;
+  window.scrollTo(0,0);
+
+  document.getElementById("back").onclick=()=>{home();window.scrollTo(0,0)};
+  document.getElementById("nextTopic").onclick=()=>openTopic(nx.id);
+
+  const steps=[...app.querySelectorAll("#steps li")];const ns=document.getElementById("nextStep");
+  ns.onclick=()=>{
+    const hid=steps.find(s=>s.hidden);
+    if(hid){hid.hidden=false}
+    if(!steps.some(s=>s.hidden)){ns.textContent="Anladım 💗";ns.disabled=true;burst(ns)}
+  };
+
+  app.querySelectorAll(".qcard").forEach(c=>{
+    const qi=+c.dataset.q;
+    c.addEventListener("click",e=>{
+      const b=e.target.closest("[data-act]");if(!b)return;
+      const act=b.dataset.act;
+      if(act==="hint"){const h=c.querySelector(".hint");h.hidden=!h.hidden;return}
+      if(act==="ans"){c.querySelector(".ans").hidden=false;c.querySelector(".mark").hidden=false;b.hidden=true;return}
+      if(act==="ok"||act==="again"){
+        P[t.id]=P[t.id]||{};const wasDone=doneCount(t.id)>=t.qs.length;
+        P[t.id][qi]=act;save();
+        c.classList.toggle("ok",act==="ok");
+        c.querySelectorAll(".mark .btn").forEach(x=>x.classList.toggle("sel",x===b));
+        c.querySelector(".cheer").hidden=act!=="again";
+        if(act==="ok")burst(b);
+        if(!wasDone&&doneCount(t.id)>=t.qs.length){
+          const n=document.getElementById("note");n.outerHTML=noteHTML(t);
+          const nn=document.getElementById("note");nn.classList.add("pop");
+          setTimeout(()=>{nn.scrollIntoView({behavior:"smooth",block:"center"});burst(nn)},250);
+        }
+      }
+    });
+  });
+}
+
+const start=(location.hash||"").slice(1);
+if(T.some(t=>t.id===start))openTopic(start);else home();
+</script>
+</body>
+</html>

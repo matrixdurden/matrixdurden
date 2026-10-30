@@ -213,7 +213,7 @@
   </div>
 </div>
 
-<audio id="song" src="sarki.mp3" preload="auto" playsinline></audio>
+<audio id="song" src="sarki.mp3" preload="none" playsinline></audio>
 
 <script>
 /* =========================================================
@@ -332,9 +332,34 @@ function now() {
   return (lastNow = t);
 }
 audio.addEventListener("error", useTimer);
-audio.addEventListener("playing", () => {
-  if (!asked && audio.currentTime < SONG_START - 1) audio.currentTime = SONG_START;
-}, { once: true });
+
+/* Ses kısık başlar, şarkı gerçekten SONG_START'a sarılınca açılır.
+   8 sn içinde sarılamazsa şarkı olduğu yerden açılır, yazılar sayaçla devam eder. */
+let started = false, seekTries = 0;
+function whenAtStart() {
+  if (started || !fbT0) return;            // zarf açılmadan önceki yükleme olaylarını yok say
+  const atStart = audio.currentTime >= SONG_START - 1;
+  if (!atStart && performance.now() - fbT0 < 8000) {
+    if (!audio.seeking && audio.readyState >= 1 && seekTries < 3) {
+      seekTries++;
+      try { audio.currentTime = now(); } catch (e) {}
+    }
+    return;
+  }
+  started = true;
+  useAudio = atStart;
+  fadeTo(VOLUME, 2.5);
+}
+["loadedmetadata", "canplay", "playing", "seeked", "timeupdate"].forEach(ev => audio.addEventListener(ev, whenAtStart));
+
+/* matrixdurden.is-a.dev Cloudflare'dan geçiyor ve Cloudflare parça parça indirmeyi
+   (Range) desteklemiyor; bu yüzden ilk açılışta şarkıda ileri sarmak tutmuyordu.
+   mp3'ü sayfa açılınca tamamen indirip bellekten çalıyoruz, orada sarmak hep çalışır. */
+fetch(audio.getAttribute("src")).then(r => r.ok ? r.blob() : Promise.reject()).then(b => {
+  if (started) return;                     // şarkı zaten çalıyorsa kesme
+  audio.src = URL.createObjectURL(b);
+  if (fbT0) { seekTries = 0; audio.play().catch(() => {}); }   // zarf açıldıysa bellekten devam
+}).catch(() => {});
 
 /* volume through Web Audio — iPhone ignores audio.volume, a GainNode works everywhere */
 let actx = null, gain = null;
@@ -437,9 +462,10 @@ $("openBtn").addEventListener("click", () => {
   burst(18, .8);
   setupAudio();
   if (actx && actx.state === "suspended") actx.resume();
+  if (!gain) audio.volume = 0;
+  fbBase = SONG_START; fbT0 = performance.now(); // şarkı sarılana kadar yazıları sayaç yürütür
   try { audio.currentTime = SONG_START; } catch (e) {}
-  audio.play().then(() => { useAudio = true; fadeTo(VOLUME, 2.5); }).catch(useTimer);
-  fbT0 = performance.now(); // timer baseline in case audio never starts
+  audio.play().then(whenAtStart).catch(useTimer);
   setTimeout(() => { show("lyrics"); requestAnimationFrame(tick); }, 400);
 });
 

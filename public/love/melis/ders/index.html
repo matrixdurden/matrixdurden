@@ -463,7 +463,7 @@ function card(t){
 function home(){
   const ok=totalOk();const pct=Math.round(ok/totalQ*100);
   app.innerHTML=`
-  <div class="top"><span class="brand">Pembe Ders Defteri</span><button class="pill" id="moral">Moral lazım 💌</button></div>
+  <div class="top"><span class="brand">Pembe Ders Defteri</span><span style="display:flex;gap:8px;flex-wrap:wrap"><a class="pill" href="../biyoloji/" style="text-decoration:none">Biyoloji 🌱</a><button class="pill" id="moral">Moral lazım 💌</button></span></div>
   <div class="note">Selam Melis 💗 Bugün biraz birlikte çalışalım mı? Konular küçük küçük, sorular kolaydan zora. Her konunun sonunda sana bir notum var. Ben hep yanındayım.<span class="sig">— Muhammet</span></div>
   <div class="prog"><div class="row"><span>Bildiğin sorular</span><span>${ok} / ${totalQ} ♥</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>
   <section class="group"><div class="group-h"><h2>Önce bunlar</h2><span class="small">1. yazılıda çıkıyor</span></div>
